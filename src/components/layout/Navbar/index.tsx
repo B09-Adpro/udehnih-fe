@@ -1,24 +1,68 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, X, ChevronDown, GraduationCap } from 'lucide-react';
+import { Search, Menu, X, ChevronDown, GraduationCap, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import AuthService from '@/lib/services/AuthService';
 
 export const Navbar = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const user = AuthService.getCurrentUser();
+        if (user && user.token) {
+          setIsLoggedIn(true);
+          setUserName(user.name || "");
+        } else {
+          setIsLoggedIn(false);
+          setUserName("");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsLoggedIn(false);
+      }
+    };
+    if (pathname === "/register") {
+      setIsLoggedIn(false);
+    } else {
+      checkAuth();
+    }
+  }, [pathname]);
+
+  const handleLogout = () => {
+    try {
+      setIsLoggedIn(false);
+      setUserName("");
+      localStorage.removeItem('user');
+      AuthService.logout().catch(err => console.error("Logout error:", err));
+      router.push('/');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <header className="w-full border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <a href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <GraduationCap className="h-8 w-8 text-primary" />
               <span className="font-bold text-xl">Udehnih</span>
-            </a>
+            </Link>
           </div>
 
           <nav className="hidden md:flex items-center space-x-1">
-            <a href="/" className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100">
+            <Link href="/" className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100">
               Beranda
-            </a>
+            </Link>
             <div className="relative group">
               <button className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100 flex items-center">
                 Kursus
@@ -26,33 +70,33 @@ export const Navbar = () => {
               </button>
               <div className="absolute left-0 top-full w-48 bg-white rounded-md shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 <div className="p-2">
-                  <a href="/courses/development" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                  <Link href="/courses/fisika" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                     Fisika
-                  </a>
-                  <a href="/courses/design" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                  </Link>
+                  <Link href="/courses/matematika" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                     Matematika
-                  </a>
-                  <a href="/courses/business" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                  </Link>
+                  <Link href="/courses/bahasa" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                     Bahasa
-                  </a>
-                  <a href="/courses/marketing" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                  </Link>
+                  <Link href="/courses/ips" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                     IPS
-                  </a>
-                  <a href="/courses/data-science" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                  </Link>
+                  <Link href="/courses/biologi" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                     Biologi
-                  </a>
-                  <a href="/courses/data-science" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                  </Link>
+                  <Link href="/courses/kimia" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                     Kimia
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
-            <a href="/instructors" className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100">
+            <Link href="/instructors" className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100">
               Pengajar
-            </a>
-            <a href="/pricing" className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100">
+            </Link>
+            <Link href="/events" className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100">
               Acara
-            </a>
+            </Link>
           </nav>
 
           <div className="hidden md:flex items-center relative">
@@ -65,12 +109,24 @@ export const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" className="text-sm font-medium">
-              Masuk
-            </Button>
-            <Button className="text-sm font-medium">
-              <Link href="/register">Daftar</Link>
-            </Button>
+            {isLoggedIn ? (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-gray-700">Hai, {userName}</span>
+                <Button variant="ghost" className="text-sm font-medium" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Keluar
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button variant="ghost" className="text-sm font-medium">
+                  <Link href="/login">Masuk</Link>
+                </Button>
+                <Button className="text-sm font-medium">
+                  <Link href="/register">Daftar</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           <div className="flex md:hidden">
