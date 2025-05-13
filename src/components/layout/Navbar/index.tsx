@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Search, Menu, X, ChevronDown, GraduationCap } from 'lucide-react';
+import Link from 'next/link';
 
 export const Navbar = () => {
   return (
@@ -68,7 +69,7 @@ export const Navbar = () => {
               Masuk
             </Button>
             <Button className="text-sm font-medium">
-              Daftar
+              <Link href="/register">Daftar</Link>
             </Button>
           </div>
 
