@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,10 +9,15 @@ import { Label } from '@/components/ui/label';
 import { EyeIcon, EyeOffIcon, CheckCircle, AlertCircle } from 'lucide-react';
 import { registerSchema, PASSWORD_CRITERIA } from '../constant';
 import { RegisterFormValues } from '../interface';
+import AuthService from '@/lib/services/AuthService';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export const RegisterForm = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
   const [passwordStrength, setPasswordStrength] = React.useState(0);
+  const [isLoading, setIsLoading] = React.useState(false);  
 
   const { 
     register, 
@@ -39,7 +44,7 @@ export const RegisterForm = () => {
           strength += 1;
         }
       });
-      
+
       if (/[^A-Za-z0-9]/.test(password)) {
         strength += 1;
       }
@@ -54,8 +59,18 @@ export const RegisterForm = () => {
     setShowPassword(!showPassword);
   };
 
-  const onSubmit = (data: RegisterFormValues) => {
-    console.log('Form submitted:', data);
+  const onSubmit = async (data: RegisterFormValues) => {
+    setIsLoading(true);
+
+    try {
+      await AuthService.register(data.email, data.name, data.password);
+      toast.success('Berhasil membuat akun');
+      router.push('/login');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Terjadi kesalahan pada server, silakan coba lagi nanti');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -130,7 +145,6 @@ export const RegisterForm = () => {
           </p>
         )}
         
-        {/* Password strength indicator */}
         {password && (
           <>
             <div className="mt-2">
@@ -191,9 +205,11 @@ export const RegisterForm = () => {
         </p>
       )}
       
-      <Button type="submit" className="w-full h-11 mt-6">
-        Daftar Sekarang
+      <Button type="submit" className="w-full h-11 mt-6" disabled={isLoading} onClick={handleSubmit(onSubmit)}>
+        {isLoading ? 'Membuat akun...' : 'Daftar Sekarang'}
       </Button>
     </form>
   );
 };
+
+export default RegisterForm;
