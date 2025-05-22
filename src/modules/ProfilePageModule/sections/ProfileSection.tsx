@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Camera, Mail, Phone, MapPin, Calendar, BookOpen, Award } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 
 export const ProfileSection = () => {
     return (
@@ -21,12 +21,16 @@ export const ProfileSection = () => {
                         </Avatar>
                     </div>
                     <div className="space-y-4">
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-                            You Make Stray Kids Stay
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                            Stray Kids
                         </h1>
-                        <p className="text-gray-600 mb-8 text-lg">
-                            Stray Kids Everywhere All Around the World, You Make Stray Kids Stay
+                        <p className="text-gray-600 mb-6 text-lg">
+                            straykids@jype.com
                         </p>
+                        <Button className="h-12 px-6 font-medium">
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit Profil
+                        </Button>
                     </div>
                 </div>
             </div>
