@@ -16,6 +16,9 @@ export const EnrolledCoursesSection = () => {
               Kursus Terdaftar
             </h2>
           </div>
+          <Button variant="link" className="mt-4 md:mt-0 p-0 font-medium">
+            Lihat Semua Kursus Terdaftar
+          </Button>
         </div>
 
         <Tabs defaultValue="all" className="mb-12">
