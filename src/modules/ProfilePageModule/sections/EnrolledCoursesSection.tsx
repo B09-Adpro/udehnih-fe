@@ -8,7 +8,7 @@ import { Clock, BarChart } from 'lucide-react';
 
 export const EnrolledCoursesSection = () => {
   return (
-    <section className="w-full pb-20">
+    <section className="w-full pb-10">
       <div className="container px-4 mx-auto">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-2">
           <div>
