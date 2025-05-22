@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const REPORTS = [
     {
       id: 1,
@@ -21,3 +23,12 @@ export const REPORTS = [
       status: 'Pending',
     }
 ];
+
+export const createReportSchema = z.object({
+  title: z
+    .string()
+    .min(1, { message: 'Judul wajib diisi' }),
+  detail: z
+    .string()
+    .min(1, { message: 'Detail wajib diisi' }),
+});
