@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthService from '@/lib/services/AuthService';
+import { AuthService } from '@/lib/services/auth.service';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { RegisterFormValues } from '@/modules/RegisterModule/interface';

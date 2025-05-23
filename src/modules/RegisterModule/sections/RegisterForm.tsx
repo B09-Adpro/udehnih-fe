@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { EyeIcon, EyeOffIcon, CheckCircle, AlertCircle } from 'lucide-react';
 import { registerSchema, PASSWORD_CRITERIA } from '../constant';
 import { RegisterFormValues } from '../interface';
-import AuthService from '@/lib/services/AuthService';
+import { AuthService } from '@/lib/services/auth.service';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
