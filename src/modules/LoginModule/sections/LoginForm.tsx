@@ -8,15 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EyeIcon, EyeOffIcon, AlertCircle } from 'lucide-react';
 import { loginSchema, LoginFormValues } from '../constant';
-import AuthService from '@/lib/services/AuthService';
-import { useRouter } from 'next/navigation';
+import { AuthService } from '@/lib/services/auth.service';
+import useUserData from '@/lib/hooks/useUserData';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshUserData } = useUserData();
   const router = useRouter();
-
+  
   const { 
     register, 
     handleSubmit, 
@@ -40,9 +42,10 @@ export const LoginForm = () => {
     try {
       await AuthService.login(data.email, data.password);
       toast.success('Berhasil masuk');
-      router.push('/dashboard'); 
+      await refreshUserData();
+      router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Terjadi kesalahan pada server, silakan coba lagi nanti');
+      toast.error(error?.message || 'Email atau password salah');
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +134,6 @@ export const LoginForm = () => {
         type="submit" 
         className="w-full h-11" 
         disabled={isLoading}
-        onClick={handleSubmit(onSubmit)}
       >
         {isLoading ? 'Sedang Masuk...' : 'Masuk'}
       </Button>
