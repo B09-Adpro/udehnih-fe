@@ -1,50 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, X, ChevronDown, GraduationCap, LogOut } from 'lucide-react';
+import { Search, Menu, ChevronDown, GraduationCap, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import AuthService from '@/lib/services/AuthService';
+import useUserData from '@/lib/hooks/useUserData';
+import { toast } from 'sonner';
 
 export const Navbar = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState("");
-  const router = useRouter();
-  const pathname = usePathname();
+  const { userData, isAuthenticated, logout, isLoading } = useUserData();
 
-  useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const user = AuthService.getCurrentUser();
-        if (user && user.token) {
-          setIsLoggedIn(true);
-          setUserName(user.name || "");
-        } else {
-          setIsLoggedIn(false);
-          setUserName("");
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setIsLoggedIn(false);
-      }
-    };
-    if (pathname === "/register") {
-      setIsLoggedIn(false);
-    } else {
-      checkAuth();
-    }
-  }, [pathname]);
-
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      setIsLoggedIn(false);
-      setUserName("");
-      localStorage.removeItem('user');
-      AuthService.logout().catch(err => console.error("Logout error:", err));
-      router.push('/');
+      await logout();
+      toast.success('Berhasil keluar');
     } catch (error) {
       console.error("Logout failed:", error);
+      toast.error('Gagal keluar');
     }
   };
 
@@ -109,13 +81,37 @@ export const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-3">
-            {isLoggedIn ? (
+            {isLoading ? (
+              <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
+            ) : isAuthenticated && userData ? (
               <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-gray-700">Hai, {userName}</span>
-                <Button variant="ghost" className="text-sm font-medium" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Keluar
-                </Button>
+                <div className="relative group">
+                  <button className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100">
+                    <span>Hai, {userData.name}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  <div className="absolute right-0 top-full w-48 bg-white rounded-md shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                    <div className="p-2">
+                      <Link href="/profile" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                        Profil
+                      </Link>
+                      <Link href="/dashboard" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                        Dashboard
+                      </Link>
+                      <Link href="/reports" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                        Laporan
+                      </Link>
+                      <hr className="my-1" />
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100 text-red-600"
+                      >
+                        <LogOut className="inline h-4 w-4 mr-2" />
+                        Keluar
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <>
