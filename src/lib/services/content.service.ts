@@ -53,9 +53,10 @@ export const ContentService = {
     }
   },
 
-  deleteSection: async (courseId: number, sectionId: number): Promise<void> => {
+  deleteSection: async (courseId: number, sectionId: number): Promise<{ message: string }> => {
     try {
-      await api.delete(`/api/courses/${courseId}/sections/${sectionId}`);
+      const response = await api.delete(`/api/courses/${courseId}/sections/${sectionId}`);
+      return response.data;
     } catch (error: any) {
       throw new Error(error?.response?.data?.message || 'Failed to delete section');
     }
@@ -89,9 +90,10 @@ export const ContentService = {
     }
   },
 
-  deleteArticle: async (courseId: number, sectionId: number, articleId: number): Promise<void> => {
+  deleteArticle: async (courseId: number, sectionId: number, articleId: number): Promise<{ message: string }> => {
     try {
-      await api.delete(`/api/courses/${courseId}/sections/${sectionId}/articles/${articleId}`);
+      const response = await api.delete(`/api/courses/${courseId}/sections/${sectionId}/articles/${articleId}`);
+      return response.data;
     } catch (error: any) {
       throw new Error(error?.response?.data?.message || 'Failed to delete article');
     }
