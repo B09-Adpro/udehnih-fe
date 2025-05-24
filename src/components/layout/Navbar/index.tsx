@@ -93,7 +93,8 @@ export const Navbar = () => {
                   }}
                 >
                   <BookOpen className="mr-1 h-4 w-4" />
-                  Tutor ({isTutor() ? 'TRUE' : 'FALSE'})
+                  {/* Tutor ({isTutor() ? 'TRUE' : 'FALSE'}) */}
+                  Tutor
                   <ChevronDown className="ml-1 h-4 w-4" />
                 </button>
                 <div className="absolute left-0 top-full w-56 bg-white rounded-md shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
