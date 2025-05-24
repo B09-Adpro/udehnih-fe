@@ -10,6 +10,16 @@ import { toast } from 'sonner';
 export const Navbar = () => {
   const { userData, isAuthenticated, logout, isLoading, isTutor, isStaff } = useUserData();
 
+  // Debug logs untuk Navbar
+  console.log("=== NAVBAR DEBUG ===");
+  console.log("isAuthenticated:", isAuthenticated);
+  console.log("userData:", userData);
+  console.log("userData.roles:", userData?.roles);
+  console.log("isTutor():", isTutor());
+  console.log("isStaff():", isStaff());
+  console.log("isLoading:", isLoading);
+  console.log("===================");
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -70,12 +80,20 @@ export const Navbar = () => {
               Acara
             </Link>
             
-            {/* tutor menu, bkl ditunjukin kalo yg akses adl tutor ato yg bs jd tutor */}
+            {/* DEBUG: Tutor menu dengan console log */}
             {isAuthenticated && (
               <div className="relative group">
-                <button className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100 flex items-center">
+                <button 
+                  className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100 flex items-center"
+                  onClick={() => {
+                    console.log("=== TUTOR MENU CLICKED ===");
+                    console.log("Current isTutor():", isTutor());
+                    console.log("User roles:", userData?.roles);
+                    console.log("========================");
+                  }}
+                >
                   <BookOpen className="mr-1 h-4 w-4" />
-                  Tutor
+                  Tutor ({isTutor() ? 'TRUE' : 'FALSE'})
                   <ChevronDown className="ml-1 h-4 w-4" />
                 </button>
                 <div className="absolute left-0 top-full w-56 bg-white rounded-md shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
