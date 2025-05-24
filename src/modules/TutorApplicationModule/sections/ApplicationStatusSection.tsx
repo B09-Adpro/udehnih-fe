@@ -20,11 +20,13 @@ import { TutorService, TutorApplicationStatus } from '@/lib/services/tutor.servi
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import useUserData from '@/lib/hooks/useUserData';
 
 export const ApplicationStatusSection = () => {
   const [applicationStatus, setApplicationStatus] = useState<TutorApplicationStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCanceling, setIsCanceling] = useState(false);
+  const { refreshUserData } = useUserData();
   const router = useRouter();
 
   useEffect(() => {
@@ -35,9 +37,14 @@ export const ApplicationStatusSection = () => {
     try {
       const status = await TutorService.getApplicationStatus();
       setApplicationStatus(status);
+      
+      // Jika status ACCEPTED, refresh user data untuk mendapatkan role TUTOR terbaru
+      if (status.status === 'ACCEPTED') {
+        console.log('Application ACCEPTED, refreshing user data...');
+        await refreshUserData();
+      }
     } catch (error: any) {
       toast.error(error.message || 'Gagal memuat status aplikasi');
-      // Jika tidak ada aplikasi, redirect ke form apply
       router.push('/tutor/apply');
     } finally {
       setIsLoading(false);
@@ -58,6 +65,20 @@ export const ApplicationStatusSection = () => {
       toast.error(error.message || 'Gagal membatalkan aplikasi');
     } finally {
       setIsCanceling(false);
+    }
+  };
+
+  // Fungsi untuk force refresh dan redirect
+  const handleStartAsTutor = async () => {
+    try {
+      await refreshUserData();
+      toast.success('Data berhasil diperbarui!');
+      // Delay sebentar untuk memastikan localStorage ter-update
+      setTimeout(() => {
+        router.push('/tutor/courses');
+      }, 500);
+    } catch (error) {
+      toast.error('Gagal memperbarui data user');
     }
   };
 
@@ -265,16 +286,15 @@ export const ApplicationStatusSection = () => {
                 </>
               )}
 
-              {applicationStatus.status === 'ACCEPTED' && (
-                <Button asChild className="w-full">
-                  <Link href="/tutor">
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                    Mulai Sebagai Tutor
-                  </Link>
+              {/* Fixed: Add null check before accessing status */}
+              {applicationStatus?.status === 'ACCEPTED' && (
+                <Button onClick={handleStartAsTutor} className="w-full">
+                  <GraduationCap className="mr-2 h-4 w-4" />
+                  Mulai Sebagai Tutor
                 </Button>
               )}
 
-              {applicationStatus.status === 'DENIED' && (
+              {applicationStatus?.status === 'DENIED' && (
                 <Button asChild className="w-full">
                   <Link href="/tutor/apply">
                     <FileText className="mr-2 h-4 w-4" />
@@ -285,7 +305,7 @@ export const ApplicationStatusSection = () => {
             </div>
 
             {/* Additional Info */}
-            {applicationStatus.status === 'PENDING' && (
+            {applicationStatus?.status === 'PENDING' && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-blue-800 text-sm">
                   <Clock className="h-4 w-4 inline mr-2" />
@@ -294,7 +314,7 @@ export const ApplicationStatusSection = () => {
               </div>
             )}
 
-            {applicationStatus.status === 'ACCEPTED' && (
+            {applicationStatus?.status === 'ACCEPTED' && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-green-800 text-sm">
                   <CheckCircle className="h-4 w-4 inline mr-2" />
@@ -303,7 +323,7 @@ export const ApplicationStatusSection = () => {
               </div>
             )}
 
-            {applicationStatus.status === 'DENIED' && (
+            {applicationStatus?.status === 'DENIED' && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-red-800 text-sm">
                   <XCircle className="h-4 w-4 inline mr-2" />
