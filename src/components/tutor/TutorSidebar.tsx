@@ -47,7 +47,7 @@ export const TutorSidebar = () => {
         <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
           <Link href="/tutor" className="flex items-center gap-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">Tutor Panel</span>
+            <span className="font-bold text-xl">Udehnih</span>
           </Link>
         </div>
         
