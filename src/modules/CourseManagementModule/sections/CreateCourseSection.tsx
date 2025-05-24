@@ -149,4 +149,119 @@ export const CreateCourseSection = () => {
                 >
                   <option value="">Pilih kategori kursus</option>
                   {COURSE_CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <p className="text-xs text-red-500 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.category.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Deskripsi Kursus</Label>
+                <textarea
+                  id="description"
+                  placeholder="Jelaskan apa yang akan dipelajari siswa dalam kursus ini..."
+                  rows={4}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+                    errors.description ? 'border-red-500' : ''
+                  }`}
+                  disabled={isLoading}
+                  {...register('description')}
+                />
+                <div className="flex justify-between items-center">
+                  {errors.description ? (
+                    <p className="text-xs text-red-500 flex items-center">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      {errors.description.message}
+                    </p>
+                  ) : (
+                    <div></div>
+                  )}
+                  <span className={`text-xs ${getCharacterColor('description', 1000)}`}>
+                    {getCharacterCount('description', 1000)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Price */}
+              <div className="space-y-2">
+                <Label htmlFor="price" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Harga Kursus
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                    Rp
+                  </span>
+                  <Input
+                    id="price"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    placeholder="0"
+                    className={`h-11 pl-10 ${errors.price ? 'border-red-500' : ''}`}
+                    disabled={isLoading}
+                    {...register('price', { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="flex justify-between items-center">
+                  {errors.price ? (
+                    <p className="text-xs text-red-500 flex items-center">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      {errors.price.message}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Masukkan 0 untuk kursus gratis
+                    </p>
+                  )}
+                  <span className="text-xs text-gray-500">
+                    {formatPrice(watchedValues.price || 0)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Preview Card */}
+              {(watchedValues.title || watchedValues.description) && (
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-sm mb-2">Preview Kursus:</h4>
+                  <div className="bg-white p-4 rounded-md border">
+                    <h3 className="font-semibold text-lg mb-2">
+                      {watchedValues.title || 'Judul Kursus'}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                      {watchedValues.description || 'Deskripsi kursus akan muncul di sini...'}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500">
+                        {watchedValues.category || 'Kategori'}
+                      </span>
+                      <span className="font-bold text-primary">
+                        {formatPrice(watchedValues.price || 0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full h-12" 
+                disabled={isLoading}
+              >
+                {isLoading ? 'Membuat Kursus...' : 'Buat Kursus'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+};
