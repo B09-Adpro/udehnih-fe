@@ -2,13 +2,23 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, ChevronDown, GraduationCap, LogOut } from 'lucide-react';
+import { Search, Menu, ChevronDown, GraduationCap, LogOut, BookOpen, Users } from 'lucide-react';
 import Link from 'next/link';
 import useUserData from '@/lib/hooks/useUserData';
 import { toast } from 'sonner';
 
 export const Navbar = () => {
-  const { userData, isAuthenticated, logout, isLoading } = useUserData();
+  const { userData, isAuthenticated, logout, isLoading, isTutor, isStaff } = useUserData();
+
+  // Debug logs untuk Navbar
+  console.log("=== NAVBAR DEBUG ===");
+  console.log("isAuthenticated:", isAuthenticated);
+  console.log("userData:", userData);
+  console.log("userData.roles:", userData?.roles);
+  console.log("isTutor():", isTutor());
+  console.log("isStaff():", isStaff());
+  console.log("isLoading:", isLoading);
+  console.log("===================");
 
   const handleLogout = async () => {
     try {
@@ -69,6 +79,55 @@ export const Navbar = () => {
             <Link href="/events" className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100">
               Acara
             </Link>
+            
+            {/* DEBUG: Tutor menu dengan console log */}
+            {isAuthenticated && (
+              <div className="relative group">
+                <button 
+                  className="px-3 py-2 text-sm font-medium rounded-md text-gray-900 hover:bg-gray-100 flex items-center"
+                  onClick={() => {
+                    console.log("=== TUTOR MENU CLICKED ===");
+                    console.log("Current isTutor():", isTutor());
+                    console.log("User roles:", userData?.roles);
+                    console.log("========================");
+                  }}
+                >
+                  <BookOpen className="mr-1 h-4 w-4" />
+                  {/* Tutor ({isTutor() ? 'TRUE' : 'FALSE'}) */}
+                  Tutor
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </button>
+                <div className="absolute left-0 top-full w-56 bg-white rounded-md shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <div className="p-2">
+                    {isTutor() ? (
+                      <>
+                        <Link href="/tutor" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                          Dashboard Tutor
+                        </Link>
+                        <Link href="/tutor/courses" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                          Kelola Kursus
+                        </Link>
+                        <Link href="/tutor/courses/create" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                          Buat Kursus Baru
+                        </Link>
+                        <Link href="/tutor/status" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                          Status Aplikasi
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link href="/tutor/apply" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                          Daftar Sebagai Tutor
+                        </Link>
+                        <Link href="/tutor/status" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                          Cek Status Aplikasi
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </nav>
 
           <div className="hidden md:flex items-center relative">
@@ -95,9 +154,12 @@ export const Navbar = () => {
                       <Link href="/profile" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                         Profil
                       </Link>
-                      <Link href="/dashboard" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
-                        Dashboard
-                      </Link>
+                      {isStaff() && (
+                        <Link href="/dashboard" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
+                          <Users className="inline h-4 w-4 mr-2" />
+                          Dashboard Staff
+                        </Link>
+                      )}
                       <Link href="/reports" className="block px-3 py-2 text-sm rounded-md hover:bg-gray-100">
                         Laporan
                       </Link>
