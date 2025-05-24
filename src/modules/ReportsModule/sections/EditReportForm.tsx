@@ -11,8 +11,13 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { createReportSchema } from '../constant';
 import { CreateReportFormValues } from '../interface';
+import { ReportResponseDto } from '@/lib/services/interface';
 
-export const CreateReportForm = () => {
+interface EditReportFormProps {
+  report: ReportResponseDto;
+}
+
+export const EditReportForm = ({ report }: EditReportFormProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);  
 
@@ -23,8 +28,8 @@ export const CreateReportForm = () => {
   } = useForm<CreateReportFormValues>({
     resolver: zodResolver(createReportSchema),
     defaultValues: {
-      title: '',
-      detail: ''
+      title: report.title,
+      detail: report.detail
     }
   });
 
@@ -32,11 +37,11 @@ export const CreateReportForm = () => {
     setIsLoading(true);
 
     try {
-      await ReportService.create({
+      await ReportService.updateReport(report.reportId, {
         title: data.title,
         detail: data.detail
       });
-      toast.success('Berhasil membuat laporan');
+      toast.success('Berhasil mengubah laporan');
       router.push('/reports');
     } catch (error: any) {
       toast.error(error?.response?.data?.message || 'Terjadi kesalahan pada server, silakan coba lagi nanti');
@@ -51,7 +56,7 @@ export const CreateReportForm = () => {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-                Buat Laporan
+              Edit Laporan
             </h1>
           </div>
         </div>
@@ -101,14 +106,13 @@ export const CreateReportForm = () => {
               className="h-11 flex-1" 
               disabled={isLoading}
             >
-              {isLoading ? 'Mengirim laporan...' : 'Kirim Laporan'}
+              {isLoading ? 'Menyimpan perubahan...' : 'Simpan Perubahan'}
             </Button>
           </div>
         </form>
-
       </div>
     </section>
   );
 };
 
-export default CreateReportForm;
+export default EditReportForm; 

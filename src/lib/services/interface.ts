@@ -7,3 +7,25 @@ export interface AuthUser {
   roles: string[];
   [key: string]: any;
 }
+
+export interface ReportRequestDto {
+  title: string;
+  detail: string;
+  status?: string;
+}
+
+export interface ReportResponseDto {
+  reportId: number;
+  studentId: string;
+  title: string;
+  detail: string;
+  status: string;
+  rejectionMessage: string | null;
+  rejectionMessageText: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RejectionMessageDto {
+  rejectionMessage: string;
+}
