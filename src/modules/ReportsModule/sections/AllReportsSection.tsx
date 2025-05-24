@@ -19,14 +19,12 @@ export const AllReportsSection = () => {
             </h1>
           </div>
           <div className="flex items-center gap-4 mb-6">
-            <Link href="/reports/create" passHref>
-              <Button asChild className="h-12 px-6 font-medium">
-                <a>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Buat Laporan
-                </a>
-              </Button>
-            </Link>
+            <Button asChild className="h-12 px-6 font-medium">
+              <Link href="/reports/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Buat Laporan
+              </Link>
+            </Button>
           </div>
         </div>
 
