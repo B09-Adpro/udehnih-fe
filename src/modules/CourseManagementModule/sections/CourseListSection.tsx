@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { 
   Plus, 
   Edit, 
@@ -15,40 +16,34 @@ import {
   Calendar,
   DollarSign
 } from 'lucide-react';
-import { COURSE_STATUS_LABELS } from '../constant';
-import { Course } from '../interface';
-import { CourseService, TutorCourse } from '@/lib/services/course.service';
-import { toast } from 'sonner';
+import { COURSE_STATUS_LABELS } from '@/modules/CourseManagementModule/constant';
+import { TutorCourse } from '@/lib/services/course.service';
 import Link from 'next/link';
+
+
 
 export const CourseListSection = () => {
   const [courses, setCourses] = useState<TutorCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [submittingId, setSubmittingId] = useState<number | null>(null);
 
+  console.log("=== COURSE LIST SECTION MOUNTED ===");
+
   useEffect(() => {
+    console.log("=== CourseListSection useEffect triggered ===");
     fetchCourses();
   }, []);
 
-  const fetchCourses = async () => {
-    try {
-      const data = await CourseService.getTutorCourses();
-      setCourses(data.courses);
-    } catch (error: any) {
-      toast.error(error.message || 'Gagal memuat daftar kursus');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteCourse = async (courseId: number, title: string) => {
+   const handleDeleteCourse = async (courseId: number, title: string) => {
     if (!window.confirm(`Apakah Anda yakin ingin menghapus kursus "${title}"?`)) {
       return;
     }
 
     setDeletingId(courseId);
     try {
+      const { CourseService } = await import('@/lib/services/course.service');
       await CourseService.deleteCourse(courseId);
       toast.success('Kursus berhasil dihapus');
       fetchCourses(); // Refresh list
@@ -66,6 +61,7 @@ export const CourseListSection = () => {
 
     setSubmittingId(courseId);
     try {
+      const { CourseService } = await import('@/lib/services/course.service');
       await CourseService.submitForReview(courseId);
       toast.success('Kursus berhasil dikirim untuk review');
       fetchCourses(); // Refresh list
@@ -93,7 +89,46 @@ export const CourseListSection = () => {
     });
   };
 
+  const fetchCourses = async () => {
+    console.log("=== FETCHING COURSES ===");
+    
+    try {
+      // Now calling real API
+      console.log("Calling CourseService.getTutorCourses()...");
+      
+      const { CourseService } = await import('@/lib/services/course.service');
+      const data = await CourseService.getTutorCourses();
+      
+      console.log("✅ API Response received:", data);
+      setCourses(data.courses);
+      setError(null);
+      console.log("✅ Course fetch completed successfully");
+      
+    } catch (error: any) {
+      console.log("❌ Course fetch failed:", error);
+      console.log("Error message:", error.message);
+      
+      setError(error.message);
+      toast.error(error.message || 'Gagal memuat daftar kursus');
+      
+      // Check if it's an authorization error
+      if (error.message?.includes('unauthorized') || error.message?.includes('forbidden')) {
+        console.log("🔥 AUTHORIZATION ERROR - This might cause redirect");
+      }
+      
+    } finally {
+      console.log("Setting isLoading to false");
+      setIsLoading(false);
+    }
+  };
+
+  console.log("=== COURSE LIST SECTION RENDER ===");
+  console.log("isLoading:", isLoading);
+  console.log("courses:", courses);
+  console.log("error:", error);
+
   if (isLoading) {
+    console.log("Rendering loading state");
     return (
       <section className="w-full py-12">
         <div className="container mx-auto px-4">
@@ -102,19 +137,12 @@ export const CourseListSection = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
                 <Card key={i}>
-                  <CardHeader>
-                    <div className="h-6 bg-gray-200 rounded"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                  </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     <div className="space-y-2">
                       <div className="h-4 bg-gray-200 rounded"></div>
                       <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <div className="h-10 bg-gray-200 rounded w-full"></div>
-                  </CardFooter>
                 </Card>
               ))}
             </div>
@@ -124,6 +152,25 @@ export const CourseListSection = () => {
     );
   }
 
+  if (error) {
+    console.log("Rendering error state");
+    return (
+      <section className="w-full py-12">
+        <div className="container mx-auto px-4">
+          <Card className="text-center py-12">
+            <CardContent>
+              <div className="text-red-500 mb-4">❌</div>
+              <h3 className="text-lg font-medium mb-2">Error Loading Courses</h3>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <Button onClick={fetchCourses}>Retry</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
+  console.log("Rendering course list");
   return (
     <section className="w-full py-12">
       <div className="container mx-auto px-4">
@@ -262,7 +309,7 @@ export const CourseListSection = () => {
                     </div>
                   </CardContent>
                   
-                  <CardFooter className="flex flex-col gap-2">
+                  <CardContent className="flex flex-col gap-2 pt-0">
                     <div className="flex w-full gap-2">
                       <Button 
                         variant="outline" 
@@ -325,7 +372,7 @@ export const CourseListSection = () => {
                         )}
                       </Button>
                     </div>
-                  </CardFooter>
+                  </CardContent>
                 </Card>
               );
             })}
