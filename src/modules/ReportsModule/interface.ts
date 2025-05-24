@@ -4,10 +4,13 @@ import { createReportSchema } from './constant';
 export type CreateReportFormValues = z.infer<typeof createReportSchema>;
 
 export interface Report {
-  id: number;
+  reportId: number;
+  studentId: string;
   title: string;
   detail: string;
   status: string;
+  rejectionMessage: string | null;
+  rejectionMessageText: string | null;
   createdAt: string;
   updatedAt: string;
 }
