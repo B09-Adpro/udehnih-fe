@@ -8,7 +8,6 @@ export interface Section {
   id: number;
   title: string;
   courseId: number;
-  articles?: Article[];
 }
 
 export interface Article {
