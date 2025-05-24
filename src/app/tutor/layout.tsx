@@ -12,7 +12,15 @@ export default function TutorLayout({
 }) {
   const { isLoading, isAuthenticated, isTutor } = useUserData();
 
+  // Debug logs untuk TutorLayout
+  console.log("=== TUTOR LAYOUT DEBUG ===");
+  console.log("isLoading:", isLoading);
+  console.log("isAuthenticated:", isAuthenticated);
+  console.log("isTutor():", isTutor());
+  console.log("========================");
+
   if (isLoading) {
+    console.log("TutorLayout: Showing loading state");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
@@ -26,6 +34,7 @@ export default function TutorLayout({
   }
 
   if (!isAuthenticated) {
+    console.log("TutorLayout: User not authenticated, showing login prompt");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
@@ -40,6 +49,7 @@ export default function TutorLayout({
     );
   }
 
+  console.log("TutorLayout: Rendering tutor layout with sidebar");
   return (
     <div className="flex min-h-screen bg-gray-50">
       <TutorSidebar />
