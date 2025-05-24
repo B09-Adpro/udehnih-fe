@@ -1,7 +1,7 @@
 import React from 'react'
-import CreateReportForm from '@/modules/ReportsModule/sections/CreateReportForm'
+import { CreateReportForm } from '@/modules/ReportsModule/sections/CreateReportForm'
 
-const page = () => {
+const CreateReportPage = () => {
   return (
     <div>
         <CreateReportForm/>
@@ -9,4 +9,4 @@ const page = () => {
   )
 }
 
-export default page
+export default CreateReportPage
