@@ -6,10 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AuthService } from '@/lib/services/auth.service';
+import { ReportService } from '@/lib/services/reports.service';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { RegisterFormValues } from '@/modules/RegisterModule/interface';
 import { createReportSchema } from '../constant';
 import { CreateReportFormValues } from '../interface';
 
@@ -20,13 +19,12 @@ export const CreateReportForm = () => {
   const { 
     register, 
     handleSubmit, 
-    formState: { errors }, 
-    watch 
+    formState: { errors }
   } = useForm<CreateReportFormValues>({
     resolver: zodResolver(createReportSchema),
     defaultValues: {
       title: '',
-      detail: '',
+      detail: ''
     }
   });
 
@@ -34,7 +32,6 @@ export const CreateReportForm = () => {
     setIsLoading(true);
 
     try {
-      // Replace AuthService with ReportService since this is for creating reports
       await ReportService.create({
         title: data.title,
         detail: data.detail
@@ -49,142 +46,69 @@ export const CreateReportForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Nama Lengkap</Label>
-        <Input 
-          id="name" 
-          placeholder="Masukkan nama lengkap" 
-          className={`h-11 ${errors.name ? 'border-red-500 focus:ring-red-500' : ''}`}
-          {...register('name')}
-        />
-        {errors.name && (
-          <p className="text-xs text-red-500 mt-1 flex items-start">
-            <AlertCircle className="h-3.5 w-3.5 mr-1 mt-0.5 flex-shrink-0" />
-            {errors.name.message}
-          </p>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="email">Alamat Email</Label>
-        <Input 
-          id="email" 
-          type="email" 
-          placeholder="email@example.com" 
-          className={`h-11 ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
-          {...register('email')}
-        />
-        {errors.email && (
-          <p className="text-xs text-red-500 mt-1 flex items-start">
-            <AlertCircle className="h-3.5 w-3.5 mr-1 mt-0.5 flex-shrink-0" />
-            {errors.email.message}
-          </p>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <Label htmlFor="password">Password</Label>
-          <button
-            type="button"
-            onClick={togglePasswordVisibility}
-            className="text-xs text-gray-500 hover:text-primary"
-          >
-            {showPassword ? (
-              <span className="flex items-center">
-                <EyeOffIcon className="h-3.5 w-3.5 mr-1" />
-                Sembunyikan
-              </span>
-            ) : (
-              <span className="flex items-center">
-                <EyeIcon className="h-3.5 w-3.5 mr-1" />
-                Lihat
-              </span>
+    <section className="w-full py-20 bg-gray-50">
+      <div className="container px-4 mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+                Buat Laporan
+            </h1>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="title" className="text-sm font-medium">Judul Laporan</Label>
+            <Input 
+              id="title" 
+              placeholder="Masukkan judul laporan" 
+              className={`w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-11 ${errors.title ? 'border-red-500 focus:ring-red-500' : ''}`}
+              {...register('title')}
+            />
+            {errors.title && (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.title.message}
+              </p>
             )}
-          </button>
-        </div>
-        <div className="relative">
-          <Input 
-            id="password" 
-            type={showPassword ? "text" : "password"} 
-            placeholder="Minimal 8 karakter" 
-            className={`h-11 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
-            {...register('password')}
-          />
-        </div>
-        {errors.password && (
-          <p className="text-xs text-red-500 mt-1 flex items-start">
-            <AlertCircle className="h-3.5 w-3.5 mr-1 mt-0.5 flex-shrink-0" />
-            {errors.password.message}
-          </p>
-        )}
-        
-        {password && (
-          <>
-            <div className="mt-2">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Kekuatan Password</span>
-                <span className="text-xs font-medium">
-                  {passwordStrength === 0 && 'Lemah'}
-                  {passwordStrength === 1 && 'Cukup'}
-                  {passwordStrength === 2 && 'Sedang'}
-                  {passwordStrength === 3 && 'Kuat'}
-                  {passwordStrength === 4 && 'Sangat Kuat'}
-                </span>
-              </div>
-              <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full ${
-                    passwordStrength === 0 ? 'bg-red-500' : 
-                    passwordStrength === 1 ? 'bg-orange-500' : 
-                    passwordStrength === 2 ? 'bg-yellow-500' : 
-                    passwordStrength === 3 ? 'bg-green-500' : 
-                    'bg-green-600'
-                  }`}
-                  style={{ width: `${(passwordStrength / 4) * 100}%` }}
-                />
-              </div>
-            </div>
-            
-            <div className="text-xs text-gray-500 space-y-1 mt-2">
-              {PASSWORD_CRITERIA.filter(c => !c.optional || (c.optional && c.id !== 'special')).map((criteria) => (
-                <div key={criteria.id} className="flex items-center">
-                  {criteria.regex.test(password) ? 
-                    <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" /> : 
-                    <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-gray-300" />
-                  }
-                  <span>{criteria.label}</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="detail" className="text-sm font-medium">Detail Laporan</Label>
+            <textarea 
+              id="detail" 
+              placeholder="Masukkan detail laporan" 
+              className={`w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors.detail ? 'border-red-500 focus:ring-red-500' : ''}`}
+              {...register('detail')}
+            />
+            {errors.detail && (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.detail.message}
+              </p>
+            )}
+          </div>
+          
+          <div className="flex gap-4 pt-4">
+            <Button 
+              type="button"
+              variant="outline"
+              className="h-11 flex-1"
+              onClick={() => router.push('/reports')}
+            >
+              Batal
+            </Button>
+            <Button 
+              type="submit" 
+              className="h-11 flex-1" 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Mengirim laporan...' : 'Kirim Laporan'}
+            </Button>
+          </div>
+        </form>
+
       </div>
-      
-      <div className="flex items-center space-x-2 pt-2">
-        <input
-          id="terms"
-          type="checkbox"
-          className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-          {...register('terms')}
-        />
-        <label htmlFor="terms" className="text-sm text-gray-600">
-          Saya menyetujui <a href="#" className="text-primary hover:underline">Syarat dan Ketentuan</a> serta <a href="#" className="text-primary hover:underline">Kebijakan Privasi</a>
-        </label>
-      </div>
-      {errors.terms && (
-        <p className="text-xs text-red-500 mt-1 flex items-start">
-          <AlertCircle className="h-3.5 w-3.5 mr-1 mt-0.5 flex-shrink-0" />
-          {errors.terms.message}
-        </p>
-      )}
-      
-      <Button type="submit" className="w-full h-11 mt-6" disabled={isLoading} onClick={handleSubmit(onSubmit)}>
-        {isLoading ? 'Membuat akun...' : 'Daftar Sekarang'}
-      </Button>
-    </form>
+    </section>
   );
 };
 
-export default RegisterForm;
+export default CreateReportForm;
