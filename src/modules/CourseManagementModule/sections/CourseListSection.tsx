@@ -14,13 +14,12 @@ import {
   Send,
   BookOpen,
   Calendar,
-  DollarSign
+  DollarSign,
+  Settings
 } from 'lucide-react';
 import { COURSE_STATUS_LABELS } from '@/modules/CourseManagementModule/constant';
 import { TutorCourse } from '@/lib/services/course.service';
 import Link from 'next/link';
-
-
 
 export const CourseListSection = () => {
   const [courses, setCourses] = useState<TutorCourse[]>([]);
@@ -36,7 +35,7 @@ export const CourseListSection = () => {
     fetchCourses();
   }, []);
 
-   const handleDeleteCourse = async (courseId: number, title: string) => {
+  const handleDeleteCourse = async (courseId: number, title: string) => {
     if (!window.confirm(`Apakah Anda yakin ingin menghapus kursus "${title}"?`)) {
       return;
     }
@@ -320,6 +319,18 @@ export const CourseListSection = () => {
                         <Link href={`/tutor/courses/${course.id}`}>
                           <Edit className="mr-1 h-4 w-4" />
                           Edit
+                        </Link>
+                      </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        asChild
+                      >
+                        <Link href={`/tutor/courses/${course.id}/content`}>
+                          <Settings className="mr-1 h-4 w-4" />
+                          Konten
                         </Link>
                       </Button>
                       
