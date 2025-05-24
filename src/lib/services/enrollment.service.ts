@@ -1,4 +1,4 @@
-import api from './api';
+import api from './courseApiClient';
 
 export interface EnrollmentRequest {
   courseId: number;
