@@ -16,10 +16,25 @@ const useUserData = () => {
     "/profile", 
     "/courses/enrolled",
     "/reports",
-    "/reports/create"
+    "/reports/create",
+    
+    "/tutor"
+  ];
+
+  const tutorOnlyPaths = [
+    "/tutor/courses",
+    "/tutor/courses/create"
   ];
 
   const publicPaths = ["/login", "/register"];
+
+  const hasRole = (role: string): boolean => {
+    return userData?.roles?.includes(role) || false;
+  };
+
+  const isStudent = (): boolean => hasRole('ROLE_STUDENT');
+  const isTutor = (): boolean => hasRole('ROLE_TUTOR');
+  const isStaff = (): boolean => hasRole('ROLE_STAFF');
 
   useEffect(() => {
     const checkAuth = () => {
@@ -28,19 +43,30 @@ const useUserData = () => {
         setUserData(user);
         
         if (!user) {
-          if (protectedPaths.includes(pathname)) {
+          if (protectedPaths.some(path => pathname.startsWith(path))) {
             router.replace("/login");
           }
         } else {
           if (publicPaths.includes(pathname)) {
-            router.replace("/dashboard");
+            if (user.roles?.includes('ROLE_STAFF')) {
+              router.replace("/dashboard");
+            } else {
+              router.replace("/profile");
+            }
+          }
+          
+          // Check tutor-only access
+          if (tutorOnlyPaths.some(path => pathname.startsWith(path))) {
+            if (!user.roles?.includes('ROLE_TUTOR')) {
+              router.replace("/tutor/apply");
+            }
           }
         }
       } catch (error) {
         console.error('Error checking auth:', error);
         setUserData(null);
         
-        if (protectedPaths.includes(pathname)) {
+        if (protectedPaths.some(path => pathname.startsWith(path))) {
           router.replace("/login");
         }
       } finally {
@@ -71,7 +97,12 @@ const useUserData = () => {
     isLoading, 
     isAuthenticated: !!userData,
     refreshUserData,
-    logout
+    logout,
+
+    hasRole,
+    isStudent,
+    isTutor,
+    isStaff
   };
 };
 
