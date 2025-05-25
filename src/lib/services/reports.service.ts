@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ReportRequestDto, ReportResponseDto } from './interface';
+import { ReportRequestDto, ReportResponseDto, AuthUser } from './interface';
 import { AuthService } from './auth.service';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -25,6 +25,22 @@ api.interceptors.request.use(
 );
 
 export const ReportService = {
+  hasRole: (role: string): boolean => {
+    const user = AuthService.getCurrentUser();
+    return user?.roles?.some(r => r === role || r === `ROLE_${role}`) || false;
+  },
+
+  isStudent: (): boolean => {
+    return ReportService.hasRole('STUDENT');
+  },
+
+  isTutor: (): boolean => {
+    return ReportService.hasRole('TUTOR');
+  },
+
+  isStaff: (): boolean => {
+    return ReportService.hasRole('STAFF');
+  },
   create: async (request: ReportRequestDto): Promise<ReportResponseDto> => {
     try {
       const response = await api.post<ReportResponseDto>('/reports', {
@@ -46,6 +62,18 @@ export const ReportService = {
 
   getUserReports: async (): Promise<ReportResponseDto[]> => {
     try {
+      // Only proceed if user is authenticated
+      if (!AuthService.isAuthenticated()) {
+        throw new Error('Authentication required');
+      }
+
+      // Check if user has student role
+      if (!ReportService.isStudent()) {
+        // Return empty array if not a student
+        return [];
+      }
+
+      // Get reports from API
       const response = await api.get<ReportResponseDto[]>('/reports');
       return response.data;
     } catch (error: any) {
@@ -56,10 +84,17 @@ export const ReportService = {
       } else if (error.response?.status === 404) {
         throw new Error('User not found.');
       } else if (error.response?.status === 400) {
-        throw new Error('Invalid request parameters');
+        // If invalid parameters, return empty array instead of throwing error
+        console.warn('Invalid request parameters when fetching reports');
+        return [];
       }
       throw new Error('Network error during reports retrieval');
     }
+  },
+
+  shouldShowReports: (): boolean => {
+    // Show reports section only if user has STUDENT role
+    return ReportService.isStudent();
   },
 
   getReportById: async (reportId: number): Promise<ReportResponseDto> => {
