@@ -31,7 +31,6 @@ export const ReportListSection = () => {
 
         const userReports = await ReportService.getUserReports();
         
-        // Sort reports by creation date (newest first) and take only the latest 3
         const sortedReports = userReports
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 3);

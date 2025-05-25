@@ -1,14 +1,68 @@
 'use client';
 
-import React from 'react';
-import { REPORTS } from '../constant';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
+import { ReportService } from '@/lib/services/reports.service';
+import { AuthService } from '@/lib/services/auth.service';
+import { ReportResponseDto } from '@/lib/services/interface';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const AllReportsSection = () => {
+  const [reports, setReports] = useState<ReportResponseDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAllReports = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const currentUser = AuthService.getCurrentUser();
+        if (!currentUser) {
+          setError('User not authenticated');
+          setIsLoading(false);
+          return;
+        }
+
+        const allReports = await ReportService.getUserReports();
+        
+        // Sort reports by creation date (newest first)
+        const sortedReports = allReports
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
+        setReports(sortedReports);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch reports');
+        console.error('Error fetching reports:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllReports();
+  }, []);
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'OPEN':
+        return 'bg-blue-100 text-blue-800';
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'RESOLVED':
+      case 'SELESAI':
+        return 'bg-green-100 text-green-800';
+      case 'REJECTED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-primary/10 text-primary';
+    }
+  };
+
   return (
     <section className="w-full py-20 bg-gray-50">
       <div className="container px-4 mx-auto">
@@ -28,25 +82,58 @@ export const AllReportsSection = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
-          {REPORTS.map((report) => (
-            <Card key={report.id} className="border-0 shadow-md">
-              <CardContent className="px-6 py-2">
-                <div className="relative mb-2">
-                  <Badge className="font-medium bg-primary/10 text-primary border-0 mb-4">
-                    {report.status}
-                  </Badge>
-                  <h3 className="text-lg font-semibold mb-2">
-                    {report.title}
-                  </h3>
-                  <p className="text-gray-600 relative z-10">
-                    {report.detail}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : reports.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm">
+            <h3 className="text-xl font-medium text-gray-700 mb-2">Belum ada laporan</h3>
+            <p className="text-gray-500 mb-6">Belum ada laporan yang dibuat</p>
+            <Button asChild>
+              <Link href="/reports/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Buat Laporan Pertama
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {reports.map((report) => (
+              <Card key={report.reportId} className="border-0 shadow-md">
+                <CardContent className="px-6 py-4">
+                  <div className="relative mb-2">
+                    <Badge className={`font-medium border-0 mb-4 ${getStatusBadgeClass(report.status)}`}>
+                      {report.status}
+                    </Badge>
+                    <h3 className="text-lg font-semibold mb-2">
+                      {report.title}
+                    </h3>
+                    <p className="text-gray-600 relative z-10 mb-2">
+                      {report.detail}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Dibuat: {new Date(report.createdAt).toLocaleDateString('id-ID')}
+                    </p>
+                    {report.rejectionMessage && (
+                      <div className="mt-3 p-3 bg-red-50 rounded-md">
+                        <p className="text-sm font-medium text-red-800">Alasan Penolakan:</p>
+                        <p className="text-sm text-red-700">{report.rejectionMessageText}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
