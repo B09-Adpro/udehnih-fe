@@ -30,3 +30,8 @@ export interface ReportResponseDto {
 export interface RejectionMessageDto {
   rejectionMessage: string;
 }
+
+export interface RejectionMessageEnum {
+  name: string; // The enum name (e.g., "INCOMPLETE_DETAIL")
+  message: string; // The display message (e.g., "Detail laporan kurang lengkap")
+}

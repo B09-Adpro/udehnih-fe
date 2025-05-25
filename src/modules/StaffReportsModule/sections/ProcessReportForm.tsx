@@ -17,14 +17,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User } from 'lucide-react';
 
-// Predefined rejection messages
-const REJECTION_MESSAGES = [
-  "Laporan tidak sesuai dengan ketentuan",
-  "Informasi dalam laporan tidak lengkap",
-  "Laporan tidak dapat diverifikasi",
-  "Laporan di luar cakupan layanan",
-  "Laporan sudah pernah diajukan sebelumnya"
-];
+// Enum for rejection messages that matches the backend enum
+enum RejectionMessage {
+  INCOMPLETE_DETAIL = "INCOMPLETE_DETAIL",
+  SIMILAR_REPORT = "SIMILAR_REPORT",
+  OTHER = "OTHER"
+}
+
+// Display messages for each rejection reason
+const REJECTION_MESSAGE_DISPLAY = {
+  [RejectionMessage.INCOMPLETE_DETAIL]: "Detail laporan kurang lengkap",
+  [RejectionMessage.SIMILAR_REPORT]: "Laporan serupa sudah ada",
+  [RejectionMessage.OTHER]: "Alasan lain"
+};
 
 // Schema for rejection message validation
 const rejectionMessageSchema = z.object({
@@ -46,13 +51,20 @@ export const ProcessReportForm = ({ report }: ProcessReportFormProps) => {
     register, 
     handleSubmit, 
     formState: { errors },
-    watch
+    watch,
+    reset
   } = useForm<RejectionFormValues>({
     resolver: zodResolver(rejectionMessageSchema),
     defaultValues: {
       rejectionMessage: ''
     }
   });
+  
+  // Update form validation when isResolve changes
+  React.useEffect(() => {
+    // Reset form when switching between resolve and reject
+    reset({ rejectionMessage: '' });
+  }, [isResolve, reset]);
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toUpperCase()) {
@@ -70,6 +82,48 @@ export const ProcessReportForm = ({ report }: ProcessReportFormProps) => {
     }
   };
 
+  // Direct resolve function that bypasses form validation
+  const handleResolve = async () => {
+    setIsLoading(true);
+
+    try {
+      // Check if user is authenticated
+      const currentUser = AuthService.getCurrentUser();
+      if (!currentUser) {
+        toast.error('Anda perlu login terlebih dahulu');
+        router.push('/login');
+        return;
+      }
+
+      // Check if user has staff role
+      const hasStaffRole = currentUser.roles?.some(role => 
+        role === 'ROLE_STAFF' || role === 'STAFF'
+      );
+      
+      if (!hasStaffRole) {
+        toast.error('Akses ditolak: Anda memerlukan peran STAFF');
+        router.push('/');
+        return;
+      }
+
+      // Resolve the report without a rejection message
+      await StaffReportService.processReport(report.reportId);
+      toast.success('Laporan berhasil diselesaikan');
+      
+      router.push('/staff/reports');
+    } catch (error: any) {
+      if (error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error('Terjadi kesalahan pada server, silakan coba lagi nanti');
+      }
+      console.error('Error processing report:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Form submission handler for rejection
   const onSubmit = async (data: RejectionFormValues) => {
     setIsLoading(true);
 
@@ -93,19 +147,12 @@ export const ProcessReportForm = ({ report }: ProcessReportFormProps) => {
         return;
       }
 
-      // Process the report
-      if (isResolve) {
-        // Resolve the report without a rejection message
-        await StaffReportService.processReport(report.reportId);
-        toast.success('Laporan berhasil diselesaikan');
-      } else {
-        // Reject the report with a rejection message
-        const rejectionData: RejectionMessageDto = {
-          rejectionMessage: data.rejectionMessage
-        };
-        await StaffReportService.processReport(report.reportId, rejectionData);
-        toast.success('Laporan berhasil ditolak');
-      }
+      // Process the rejection
+      const rejectionData: RejectionMessageDto = {
+        rejectionMessage: data.rejectionMessage
+      };
+      await StaffReportService.processReport(report.reportId, rejectionData);
+      toast.success('Laporan berhasil ditolak');
       
       router.push('/staff/reports');
     } catch (error: any) {
@@ -133,7 +180,7 @@ export const ProcessReportForm = ({ report }: ProcessReportFormProps) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
+            <form onSubmit={isResolve ? (e) => { e.preventDefault(); handleResolve(); } : handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Keputusan</h2>
                 <div className="flex items-center space-x-4">
@@ -163,8 +210,8 @@ export const ProcessReportForm = ({ report }: ProcessReportFormProps) => {
                     defaultValue=""
                   >
                     <option value="" disabled>Pilih alasan penolakan</option>
-                    {REJECTION_MESSAGES.map((message, index) => (
-                      <option key={index} value={message}>{message}</option>
+                    {Object.values(RejectionMessage).map((value) => (
+                      <option key={value} value={value}>{REJECTION_MESSAGE_DISPLAY[value]}</option>
                     ))}
                   </Select>
                   {errors.rejectionMessage && (
