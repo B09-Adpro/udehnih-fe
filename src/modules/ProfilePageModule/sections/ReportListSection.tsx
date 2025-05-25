@@ -31,7 +31,12 @@ export const ReportListSection = () => {
 
         const userReports = await ReportService.getUserReports();
         
-        setReports(userReports);
+        // Sort reports by creation date (newest first) and take only the latest 3
+        const sortedReports = userReports
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 3);
+        
+        setReports(sortedReports);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch reports');
         console.error('Error fetching user reports:', err);
@@ -65,7 +70,7 @@ export const ReportListSection = () => {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold tracking-tight mb-4">
-              Laporan Saya
+              Laporan Terbaru Saya
             </h2>
           </div>
           <div className="flex items-center gap-4">
