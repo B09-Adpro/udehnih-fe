@@ -21,6 +21,23 @@ export const ReportListSection = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const [selectedReport, setSelectedReport] = useState<ReportResponseDto | null>(null);
+  const [formattedDates, setFormattedDates] = useState<{[key: number]: {created: string, updated: string}}>({});
+  
+  // Format dates on client-side only
+  useEffect(() => {
+    if (reports.length > 0) {
+      const dates: {[key: number]: {created: string, updated: string}} = {};
+      reports.forEach(report => {
+        dates[report.reportId] = {
+          created: new Date(report.createdAt).toLocaleDateString(),
+          updated: report.updatedAt && report.updatedAt !== report.createdAt 
+            ? new Date(report.updatedAt).toLocaleDateString() 
+            : '-'
+        };
+      });
+      setFormattedDates(dates);
+    }
+  }, [reports]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Use useEffect to fetch reports on component mount
@@ -158,9 +175,9 @@ export const ReportListSection = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
-                        disabled={report.status.toUpperCase() === 'RESOLVED' || report.status.toUpperCase() === 'SELESAI'}
-                        title="Edit Laporan"
+                        className={`h-8 w-8 ${report.status.toUpperCase() !== 'OPEN' ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50 cursor-pointer'}`}
+                        disabled={report.status.toUpperCase() !== 'OPEN'}
+                        title={report.status.toUpperCase() !== 'OPEN' ? 'Tidak dapat mengubah laporan yang sudah diproses' : 'Edit Laporan'}
                         asChild
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -171,15 +188,15 @@ export const ReportListSection = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-gray-500 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                        className={`h-8 w-8 ${report.status.toUpperCase() !== 'OPEN' ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-red-600 hover:bg-red-50 cursor-pointer'}`}
                         onClick={async (e) => {
                           e.stopPropagation();
                           await handleDelete(report.reportId);
                           // Refresh data after deletion
                           await fetchUserReports();
                         }}
-                        disabled={isDeleting === report.reportId}
-                        title="Hapus Laporan"
+                        disabled={isDeleting === report.reportId || report.status.toUpperCase() !== 'OPEN'}
+                        title={report.status.toUpperCase() !== 'OPEN' ? 'Tidak dapat menghapus laporan yang sudah diproses' : 'Hapus Laporan'}
                       >
                         {isDeleting === report.reportId ? (
                           <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600" />
@@ -213,8 +230,8 @@ export const ReportListSection = () => {
                       )}
                     </div>
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm text-gray-500">Dibuat: {new Date(report.createdAt).toLocaleDateString()}</p>
-                      <p className="text-sm text-gray-500">Diperbarui: {report.updatedAt && report.updatedAt !== report.createdAt ? new Date(report.updatedAt).toLocaleDateString() : '-'}</p>
+                      <p className="text-sm text-gray-500">Dibuat: {formattedDates[report.reportId]?.created || ''}</p>
+                      <p className="text-sm text-gray-500">Diperbarui: {formattedDates[report.reportId]?.updated || '-'}</p>
                     </div>
                   </div>
                   {report.rejectionMessage && (
@@ -260,12 +277,12 @@ export const ReportListSection = () => {
               
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Dibuat</h3>
-                <p className="text-gray-700">{selectedReport ? new Date(selectedReport.createdAt).toLocaleDateString() : ''}</p>
+                <p className="text-gray-700">{selectedReport ? (formattedDates[selectedReport.reportId]?.created || '') : ''}</p>
               </div>
               
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Diperbarui</h3>
-                <p className="text-gray-700">{selectedReport && selectedReport.updatedAt && selectedReport.updatedAt !== selectedReport.createdAt ? new Date(selectedReport.updatedAt).toLocaleDateString() : '-'}</p>
+                <p className="text-gray-700">{selectedReport ? (formattedDates[selectedReport.reportId]?.updated || '-') : '-'}</p>
               </div>
               
               {selectedReport?.rejectionMessage && (
