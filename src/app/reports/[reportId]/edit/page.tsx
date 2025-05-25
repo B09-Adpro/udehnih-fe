@@ -6,25 +6,7 @@ import { EditReportForm } from '@/modules/ReportsModule/sections/EditReportForm'
 import { ReportService } from '@/lib/services/reports.service';
 import { ReportResponseDto } from '@/lib/services/interface';
 
-// TODO: Remove mock data when real data is available
-const mockReport: ReportResponseDto = {
-  reportId: 1,
-  studentId: "student123",
-  title: "Ballerina Cappuccina",
-  detail: "Ballerina Cappuccina, mi-mi-mi-mi. È la moglie di Cappuccino Assassino. E ama la musica, la-la-la-la. La sua passione è il Ballerino Lololo.",
-  status: "OPEN",
-  rejectionMessage: null,
-  rejectionMessageText: null,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
 export default function EditReportPage() {
-  // TODO: Remove mock data when real data is available
-  return <EditReportForm report={mockReport} />;
-
-  // TODO: Uncomment this when real data is available
-  /*
   const params = useParams();
   const [report, setReport] = useState<ReportResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,17 +33,41 @@ export default function EditReportPage() {
   }, [params.reportId]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="w-full py-20 bg-gray-50">
+        <div className="container px-4 mx-auto">
+          <div className="flex flex-col items-center justify-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
+            <p className="mt-4 text-lg">Loading report data...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="w-full py-20 bg-gray-50">
+        <div className="container px-4 mx-auto">
+          <div className="flex flex-col items-center justify-center">
+            <div className="text-red-500 text-xl">Error: {error}</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!report) {
-    return <div>Report not found</div>;
+    return (
+      <div className="w-full py-20 bg-gray-50">
+        <div className="container px-4 mx-auto">
+          <div className="flex flex-col items-center justify-center">
+            <div className="text-gray-700 text-xl">Report not found</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return <EditReportForm report={report} />;
-  */
 } 
