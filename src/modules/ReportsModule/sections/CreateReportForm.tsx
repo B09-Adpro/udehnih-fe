@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ReportService } from '@/lib/services/reports.service';
+import { AuthService } from '@/lib/services/auth.service';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { createReportSchema } from '../constant';
@@ -32,14 +33,29 @@ export const CreateReportForm = () => {
     setIsLoading(true);
 
     try {
+      // Check if user is authenticated
+      const currentUser = AuthService.getCurrentUser();
+      if (!currentUser) {
+        toast.error('Anda perlu login terlebih dahulu');
+        router.push('/login');
+        return;
+      }
+
+      // Create report - the JWT token will be added automatically by the interceptor
       await ReportService.create({
         title: data.title,
         detail: data.detail
       });
+      
       toast.success('Berhasil membuat laporan');
       router.push('/reports');
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Terjadi kesalahan pada server, silakan coba lagi nanti');
+      if (error.message) {
+        toast.error(error.message);
+      } else {
+        toast.error('Terjadi kesalahan pada server, silakan coba lagi nanti');
+      }
+      console.error('Error creating report:', error);
     } finally {
       setIsLoading(false);
     }
