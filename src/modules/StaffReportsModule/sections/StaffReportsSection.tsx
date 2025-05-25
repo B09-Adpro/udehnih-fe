@@ -155,7 +155,7 @@ export const StaffReportsSection = () => {
                                                 asChild
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                <Link href={`/staff/reports/process/${report.reportId}`}>
+                                                <Link href={`/staff/reports/${report.reportId}/process`}>
                                                     <ExternalLink className="h-4 w-4 mr-2" />
                                                     Proses Laporan
                                                 </Link>
