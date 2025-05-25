@@ -17,6 +17,7 @@ export interface ReportRequestDto {
 export interface ReportResponseDto {
   reportId: number;
   studentId: string;
+  studentName: string;
   title: string;
   detail: string;
   status: string;
@@ -28,4 +29,9 @@ export interface ReportResponseDto {
 
 export interface RejectionMessageDto {
   rejectionMessage: string;
+}
+
+export interface RejectionMessageEnum {
+  name: string; // The enum name (e.g., "INCOMPLETE_DETAIL")
+  message: string; // The display message (e.g., "Detail laporan kurang lengkap")
 }

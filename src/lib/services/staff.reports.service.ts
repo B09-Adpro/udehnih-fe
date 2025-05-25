@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ReportResponseDto, RejectionMessageDto } from './interface';
+import { AuthService } from './auth.service';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -10,13 +11,56 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use(
+  (config) => {
+    const user = AuthService.getCurrentUser();
+    if (user && user.token) {
+      config.headers['Authorization'] = `Bearer ${user.token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const StaffReportService = {
   getAllReports: async (): Promise<ReportResponseDto[]> => {
     try {
+      // Check if user is authenticated
+      const currentUser = AuthService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('Authentication required');
+      }
+
+      // Check if user has staff role
+      const hasStaffRole = currentUser.roles?.some(role => 
+        role === 'ROLE_STAFF' || role === 'STAFF'
+      );
+      
+      if (!hasStaffRole) {
+        throw new Error('Access denied: STAFF role required');
+      }
+
+      // The backend now handles fetching student names
       const response = await api.get<ReportResponseDto[]>('/reports');
-      return response.data;
+      
+      // Ensure all reports have a studentName, fallback to 'Unknown' if missing
+      const reports = response.data.map(report => ({
+        ...report,
+        studentName: report.studentName || 'Unknown'
+      }));
+      
+      return reports;
     } catch (error: any) {
-      throw new Error('Network error during reports retrieval');
+      if (error.response?.status === 401) {
+        throw new Error('Authentication failed. Please log in again.');
+      } else if (error.response?.status === 403) {
+        throw new Error('Access denied: STAFF role required');
+      } else if (error.response?.data) {
+        throw new Error(error.response.data);
+      }
+      throw new Error(error.message || 'Network error during reports retrieval');
     }
   },
 
