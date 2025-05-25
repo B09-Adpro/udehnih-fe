@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Plus, AlertCircle, Pencil, Trash2, X, ExternalLink } from 'lucide-react';
+import { Plus, AlertCircle, Pencil, Trash2, X, ExternalLink, User } from 'lucide-react';
 import { ReportService } from '@/lib/services/reports.service';
 import { AuthService } from '@/lib/services/auth.service';
 import { ReportResponseDto } from '@/lib/services/interface';
@@ -226,24 +226,21 @@ export const AllReportsSection = () => {
       </div>
       {/* Report Detail Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden max-h-[90vh]">
+          <DialogClose className="absolute right-4 top-4 rounded-full h-8 w-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
+            <X className="h-4 w-4" />
+          </DialogClose>
+          
           <div className="p-6">
             <DialogHeader className="pb-4">
-              <div className="flex justify-between items-center">
-                <DialogTitle className="text-xl font-bold">{selectedReport?.title}</DialogTitle>
-                <DialogClose className="rounded-full h-8 w-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
-                  <X className="h-4 w-4" />
-                </DialogClose>
-              </div>
+              <DialogTitle className="text-xl font-bold" style={{ overflowWrap: 'break-word', wordBreak: 'break-all', hyphens: 'auto', maxWidth: '100%' }}>
+                {selectedReport?.title}
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            
+            <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Detail</h3>
-                <p className="whitespace-pre-line text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-md">{selectedReport?.detail}</p>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Status</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Status</h3>
                 <div className="flex items-center">
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                     {selectedReport?.status}
@@ -252,14 +249,38 @@ export const AllReportsSection = () => {
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Dibuat</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Detail</h3>
+                <div className="bg-gray-50 p-4 rounded-md max-h-[200px] overflow-y-auto">
+                  <p className="whitespace-pre-line text-gray-700 leading-relaxed break-all">{selectedReport?.detail}</p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Pengirim</h3>
+                <div className="flex items-center">
+                  <div className="bg-gray-100 rounded-full p-2 mr-2">
+                    <User className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <p className="text-gray-700">{selectedReport?.studentId}</p>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Dibuat</h3>
                 <p className="text-gray-700">{selectedReport ? new Date(selectedReport.createdAt).toLocaleDateString() : ''}</p>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Diperbarui</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Diperbarui</h3>
                 <p className="text-gray-700">{selectedReport && selectedReport.updatedAt && selectedReport.updatedAt !== selectedReport.createdAt ? new Date(selectedReport.updatedAt).toLocaleDateString() : '-'}</p>
               </div>
+              
+              {selectedReport?.rejectionMessage && (
+                <div className="p-3 bg-red-50 rounded-md">
+                  <h3 className="text-sm font-medium text-red-800 mb-1">Alasan Penolakan:</h3>
+                  <p className="text-sm text-red-700">{selectedReport.rejectionMessageText}</p>
+                </div>
+              )}
             </div>
           </div>
           <div className="border-t p-4 bg-gray-50">
