@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ReportRequestDto, ReportResponseDto } from './interface';
+import { AuthService } from './auth.service';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -9,6 +10,20 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+  (config) => {
+    const user = AuthService.getCurrentUser();
+    if (user && user.token) {
+      config.headers['Authorization'] = `Bearer ${user.token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export const ReportService = {
   create: async (request: ReportRequestDto): Promise<ReportResponseDto> => {
@@ -30,18 +45,18 @@ export const ReportService = {
     }
   },
 
-  getUserReports: async (studentId: string, userEmail: string, userRole: string): Promise<ReportResponseDto[]> => {
+  getUserReports: async (): Promise<ReportResponseDto[]> => {
     try {
-      const response = await api.get<ReportResponseDto[]>('/reports', {
-        params: { studentId },
-        headers: {
-          'X-User-Email': userEmail,
-          'X-User-Role': userRole
-        }
-      });
+      const response = await api.get<ReportResponseDto[]>('/reports');
       return response.data;
     } catch (error: any) {
-      if (error.response?.status === 400) {
+      if (error.response?.status === 401) {
+        throw new Error('Authentication failed. Please log in again.');
+      } else if (error.response?.status === 403) {
+        throw new Error('You do not have permission to view these reports.');
+      } else if (error.response?.status === 404) {
+        throw new Error('User not found.');
+      } else if (error.response?.status === 400) {
         throw new Error('Invalid request parameters');
       }
       throw new Error('Network error during reports retrieval');
