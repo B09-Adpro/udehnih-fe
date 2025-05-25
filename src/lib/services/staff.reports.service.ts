@@ -42,8 +42,16 @@ export const StaffReportService = {
         throw new Error('Access denied: STAFF role required');
       }
 
+      // The backend now handles fetching student names
       const response = await api.get<ReportResponseDto[]>('/reports');
-      return response.data;
+      
+      // Ensure all reports have a studentName, fallback to 'Unknown' if missing
+      const reports = response.data.map(report => ({
+        ...report,
+        studentName: report.studentName || 'Unknown'
+      }));
+      
+      return reports;
     } catch (error: any) {
       if (error.response?.status === 401) {
         throw new Error('Authentication failed. Please log in again.');
