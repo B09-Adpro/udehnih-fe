@@ -17,6 +17,7 @@ export interface ReportRequestDto {
 export interface ReportResponseDto {
   reportId: number;
   studentId: string;
+  studentName: string;
   title: string;
   detail: string;
   status: string;
