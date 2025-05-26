@@ -213,7 +213,7 @@ export function CourseCheckoutModule({ courseId }: CourseCheckoutModuleProps) {
               )}
               
               <button 
-                onClick={() => router.push('/dashboard/my-courses')}
+                onClick={() => router.push('/my-courses')}
                 className="w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary/90"
               >
                 Lihat Kursus Saya
