@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useCourses } from "./hooks/useCourses"
 import { CoursesByCategory } from "./interface"
-import { CourseFooter } from "./sections/CourseFooter"
 import { CourseGrid } from "./sections/CourseGrid"
 import { CourseHeader } from "./sections/CoursesHeader"
 
@@ -81,7 +80,6 @@ export function CourseBrowsingModule() {
         setSearchQuery={setSearchQuery}
         keywordFromURL={keywordFromURL}
       />
-      <CourseFooter categories={categories} />
     </div>
   )
 }
