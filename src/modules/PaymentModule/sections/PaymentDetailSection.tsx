@@ -12,9 +12,10 @@ import { useRouter } from 'next/navigation';
 import { PaymentStatusConstants, RefundReasons } from '../constant';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { UUID } from 'crypto';
 
 interface PaymentDetailSectionProps {
-  transactionId: number;
+  transactionId: UUID;
 }
 
 const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transactionId }) => {
@@ -80,7 +81,7 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
       await PaymentService.requestRefund(transactionId, refundRequest);
       toast.success('Permintaan refund berhasil diajukan');
       setRefundDialogOpen(false);
-      await fetchTransactionDetails(); // Refresh transaction details
+      await fetchTransactionDetails();
     } catch (error) {
       let errorMessage = 'Gagal mengajukan permintaan refund';
       
@@ -136,7 +137,7 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6">
-        <Button variant="ghost" onClick={() => router.push('/payment/history')} className="mb-4">
+        <Button variant="ghost" onClick={() => router.push('/payments/history')} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Kembali ke Riwayat Pembayaran
         </Button>

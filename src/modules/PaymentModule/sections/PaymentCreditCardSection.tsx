@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { CreditCard } from "lucide-react";
 import { PaymentService, CreditCardRequest } from "@/lib/services/payment.service";
 import { toast } from "sonner";
+import { UUID } from 'crypto';
 
 interface PaymentCreditCardSectionProps {
-  transactionId: number;
+  transactionId: UUID;
   onPaymentComplete: (response: any) => void;
   onBack: () => void;
   isLoading: boolean;

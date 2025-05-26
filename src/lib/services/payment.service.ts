@@ -1,6 +1,6 @@
+import { UUID } from 'crypto';
 import paymentApi from './paymentApiClient';
 
-// Interfaces
 export interface PaymentRequest {
   studentId: number;
   courseId: number;
@@ -23,7 +23,7 @@ export interface RefundRequest {
 }
 
 export interface PaymentResponse {
-  transactionId: number;
+  transactionId: UUID;
   courseId: number;
   userId: number;
   courseTitle: string;
@@ -31,13 +31,37 @@ export interface PaymentResponse {
   amount: number;
   paymentStatus: string;
   paymentMethod: string;
+  paymentDetails: PaymentDetails
   createdAt: string;
   updatedAt: string;
 }
 
+export interface PaymentDetailDTO {
+  transactionId: UUID;
+  courseId: number;
+  userId: number;
+  courseTitle: string;
+  tutorName: string;
+  amount: number;
+  paymentStatus: string;
+  paymentMethod: string;
+  bankName?: string;
+  paymentDetails: PaymentDetails;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentDetails {
+  confirmation: boolean;
+  confirmedAt: string | null;
+  adminApproval: boolean;
+  approvedAt: string | null;
+  approvedBy: string | null;
+}
+
 export interface RefundResponse {
-  refundId: number;
-  transactionId: number;
+  refundId: UUID;
+  transactionId: UUID;
   reason: string;
   status: string;
   requestedAt: string;
@@ -49,7 +73,7 @@ export interface RefundResponse {
 export const PaymentService = {
   getPaymentMethods: async (): Promise<string[]> => {
     try {
-      const response = await paymentApi.get('/payments/methods');
+      const response = await paymentApi.get('api/payments/methods');
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -60,21 +84,54 @@ export const PaymentService = {
   createPayment: async (request: PaymentRequest): Promise<PaymentResponse> => {
     try {
       const courseApiKey = process.env.NEXT_PUBLIC_COURSE_API_KEY || '';
-      const response = await paymentApi.post('/payments', request, {
+      console.log('Using API key:', courseApiKey ? 'Key exists (not showing for security)' : 'No key found');
+      
+      const response = await paymentApi.post('api/payments', request, {
         headers: {
           'X-API-Key': courseApiKey
         }
       });
       return response.data;
     } catch (error: unknown) {
-      const axiosError = error as {response?: {data?: {message?: string}}};
+      const axiosError = error as {response?: {data?: {message?: string}, status?: number}};
+      console.error('Payment error details:', {
+        status: axiosError.response?.status,
+        message: axiosError.response?.data?.message,
+        requestData: request
+      });
       throw new Error(axiosError.response?.data?.message || 'Failed to create payment');
     }
   },
 
-  getPaymentById: async (transactionId: number): Promise<any> => {
+  getTransactionDetails: async (transactionId: UUID, options?: { 
+    apiKey?: string}): Promise<PaymentDetailDTO> => {
     try {
-      const response = await paymentApi.get(`/payments/${transactionId}`);
+      const headers: Record<string, string> = {};
+      
+      if (options?.apiKey) {
+        headers['X-API-Key'] = options.apiKey;
+      }
+      
+      const authToken = localStorage.getItem('auth_token');
+      if (!options?.apiKey && authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      
+      const response = await paymentApi.get(`api/payments/${transactionId}`, {
+        headers
+      });
+      
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as {response?: {data?: {message?: string; status?: string}, status?: number}};
+
+      throw new Error(axiosError.response?.data?.message || 'Failed to fetch transaction details');
+    }
+  },
+
+  getPaymentById: async (transactionId: UUID): Promise<any> => {
+    try {
+      const response = await paymentApi.get(`api/payments/${transactionId}`);
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -82,9 +139,9 @@ export const PaymentService = {
     }
   },
 
-  processCardPayment: async (transactionId: number, cardDetails: CreditCardRequest): Promise<PaymentResponse> => {
+  processCardPayment: async (transactionId: UUID, cardDetails: CreditCardRequest): Promise<PaymentResponse> => {
     try {
-      const response = await paymentApi.post(`/payments/${transactionId}/credit-card`, cardDetails);
+      const response = await paymentApi.post(`api/payments/${transactionId}/credit-card`, cardDetails);
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -92,9 +149,9 @@ export const PaymentService = {
     }
   },
 
-  processBankTransfer: async (transactionId: number): Promise<PaymentResponse> => {
+  processBankTransfer: async (transactionId: UUID): Promise<PaymentResponse> => {
     try {
-      const response = await paymentApi.post(`/payments/${transactionId}/bank-transfer`);
+      const response = await paymentApi.post(`api/payments/${transactionId}/bank-transfer`);
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -102,9 +159,9 @@ export const PaymentService = {
     }
   },
 
-  confirmBankTransfer: async (transactionId: number): Promise<PaymentResponse> => {
+  confirmBankTransfer: async (transactionId: UUID): Promise<PaymentResponse> => {
     try {
-      const response = await paymentApi.post(`/payments/${transactionId}/confirm-transfer`);
+      const response = await paymentApi.post(`api/payments/${transactionId}/confirm-transfer`);
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -112,9 +169,9 @@ export const PaymentService = {
     }
   },
 
-  requestRefund: async (transactionId: number, refundRequest: RefundRequest): Promise<RefundResponse> => {
+  requestRefund: async (transactionId: UUID, refundRequest: RefundRequest): Promise<RefundResponse> => {
     try {
-      const response = await paymentApi.post(`/payments/${transactionId}/refund`, refundRequest);
+      const response = await paymentApi.post(`api/payments/${transactionId}/refund`, refundRequest);
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -124,7 +181,7 @@ export const PaymentService = {
 
   getTransactionHistory: async (): Promise<PaymentResponse[]> => {
     try {
-      const response = await paymentApi.get('/payments/history');
+      const response = await paymentApi.get('api/payments/history');
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -134,7 +191,7 @@ export const PaymentService = {
 
   processPayment: async (paymentRequest: PaymentRequest): Promise<{transactionId: number, paymentStatus: string}> => {
     try {
-      const response = await paymentApi.post('/payments/process', paymentRequest);
+      const response = await paymentApi.post('api/payments/process', paymentRequest);
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
@@ -144,7 +201,7 @@ export const PaymentService = {
 
   getAllTransactions: async (apiKey: string): Promise<PaymentResponse[]> => {
     try {
-      const response = await paymentApi.get('/payments/transactions', {
+      const response = await paymentApi.get('api/payments/transactions', {
         headers: {
           'X-API-Key': apiKey
         }
@@ -158,7 +215,7 @@ export const PaymentService = {
 
   getAllRefunds: async (apiKey: string): Promise<RefundResponse[]> => {
     try {
-      const response = await paymentApi.get('/payments/refunds', {
+      const response = await paymentApi.get('api/payments/refunds', {
         headers: {
           'X-API-Key': apiKey
         }
@@ -170,9 +227,9 @@ export const PaymentService = {
     }
   },
 
-  getRefundDetails: async (refundId: number, apiKey: string): Promise<RefundResponse> => {
+  getRefundDetails: async (refundId: UUID, apiKey: string): Promise<RefundResponse> => {
     try {
-      const response = await paymentApi.get(`/payments/refunds/${refundId}`, {
+      const response = await paymentApi.get(`api/payments/refunds/${refundId}`, {
         headers: {
           'X-API-Key': apiKey
         }

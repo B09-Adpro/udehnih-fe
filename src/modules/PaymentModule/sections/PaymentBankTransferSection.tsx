@@ -6,9 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PaymentService } from "@/lib/services/payment.service";
 import { toast } from "sonner";
 import { BankOptions } from '../constant';
+import { UUID } from 'crypto';
 
 interface PaymentBankTransferSectionProps {
-  transactionId: number;
+  transactionId: UUID;
   onPaymentComplete: (response: any) => void;
   onBack: () => void;
   isLoading: boolean;

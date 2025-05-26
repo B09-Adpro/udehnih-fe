@@ -1,6 +1,6 @@
 export const PaymentMethodConstants = {
-  CREDIT_CARD: 'credit_card',
-  BANK_TRANSFER: 'bank_transfer',
+  CREDIT_CARD: 'Credit Card',
+  BANK_TRANSFER: 'Bank Transfer',
 };
 
 export const PaymentStatusConstants = {
