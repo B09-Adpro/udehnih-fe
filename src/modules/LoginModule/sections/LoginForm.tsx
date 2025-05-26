@@ -45,7 +45,7 @@ export const LoginForm = () => {
       await refreshUserData();
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error?.message || 'Email atau password salah');
+      toast.error('Email atau password salah');
     } finally {
       setIsLoading(false);
     }
