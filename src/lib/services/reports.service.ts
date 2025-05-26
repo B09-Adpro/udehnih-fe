@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ReportRequestDto, ReportResponseDto, AuthUser } from './interface';
 import { AuthService } from './auth.service';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -31,15 +31,15 @@ export const ReportService = {
   },
 
   isStudent: (): boolean => {
-    return ReportService.hasRole('STUDENT');
+    return ReportService.hasRole('ROLE_STUDENT');
   },
 
   isTutor: (): boolean => {
-    return ReportService.hasRole('TUTOR');
+    return ReportService.hasRole('ROLE_TUTOR');
   },
 
   isStaff: (): boolean => {
-    return ReportService.hasRole('STAFF');
+    return ReportService.hasRole('ROLE_STAFF');
   },
   create: async (request: ReportRequestDto): Promise<ReportResponseDto> => {
     try {
@@ -62,18 +62,17 @@ export const ReportService = {
 
   getUserReports: async (): Promise<ReportResponseDto[]> => {
     try {
-      // Only proceed if user is authenticated
+      
       if (!AuthService.isAuthenticated()) {
         throw new Error('Authentication required');
       }
 
-      // Check if user has student role
+      
       if (!ReportService.isStudent()) {
-        // Return empty array if not a student
         return [];
       }
 
-      // Get reports from API
+      
       const response = await api.get<ReportResponseDto[]>('/reports');
       return response.data;
     } catch (error: any) {
@@ -84,7 +83,7 @@ export const ReportService = {
       } else if (error.response?.status === 404) {
         throw new Error('User not found.');
       } else if (error.response?.status === 400) {
-        // If invalid parameters, return empty array instead of throwing error
+        
         console.warn('Invalid request parameters when fetching reports');
         return [];
       }
@@ -93,7 +92,7 @@ export const ReportService = {
   },
 
   shouldShowReports: (): boolean => {
-    // Show reports section only if user has STUDENT role
+    
     return ReportService.isStudent();
   },
 
