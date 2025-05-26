@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { CourseListDTO, CoursesByCategory, UseCourseResult } from "../interface"
 
-export function useCourses(): UseCourseResult {
+export function useCourses(keyword?: string): UseCourseResult {
   const [data, setData] = useState<CoursesByCategory | null>(null)
   const [rawData, setRawData] = useState<CourseListDTO[] | null>(null)
   const [loading, setLoading] = useState(true)
@@ -14,7 +14,13 @@ export function useCourses(): UseCourseResult {
       setLoading(true)
       setError(null)
       
-      const apiUrl = process.env.NEXT_PUBLIC_COURSE_API_URL || "http://localhost:8081/api/courses"
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+      
+      const apiUrl = keyword 
+        ? `${baseUrl}/api/courses/search?keyword=${encodeURIComponent(keyword)}` 
+        : `${baseUrl}/api/courses`;
+      
+      console.log(`Fetching courses from: ${apiUrl}`);
       
       // Get token from localStorage
       const userStr = typeof window !== "undefined" ? localStorage.getItem("user") : null
@@ -29,14 +35,11 @@ export function useCourses(): UseCourseResult {
         }
       }
       
-      console.log("Authorization header:", token ? `Bearer ${token}` : "(empty)")
-      console.log("API URL:", apiUrl)
-      
       const response = await fetch(apiUrl, {
         headers: {
           "Authorization": token ? `Bearer ${token}` : "",
           "Content-Type": "application/json",
-        },
+        }
       })
 
       if (!response.ok) {
@@ -57,7 +60,7 @@ export function useCourses(): UseCourseResult {
           if (!acc[course.category]) {
             acc[course.category] = []
           }
-          acc[course.category].push(course) 
+          acc[course.category].push(course)
           return acc
         }, {} as CoursesByCategory)
         
@@ -75,7 +78,7 @@ export function useCourses(): UseCourseResult {
 
   useEffect(() => {
     fetchCourses()
-  }, [])
+  }, [keyword]) // Re-fetch when keyword changes
 
   return { data, rawData, loading, error, refetch: fetchCourses }
 }
