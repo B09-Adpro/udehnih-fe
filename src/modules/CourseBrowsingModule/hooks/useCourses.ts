@@ -14,7 +14,7 @@ export function useCourses(keyword?: string): UseCourseResult {
       setLoading(true)
       setError(null)
       
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+      const baseUrl = process.env.NEXT_PUBLIC_COURSE_API_URL;
       
       const apiUrl = keyword 
         ? `${baseUrl}/api/courses/search?keyword=${encodeURIComponent(keyword)}` 

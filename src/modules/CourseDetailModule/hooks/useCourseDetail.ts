@@ -13,7 +13,7 @@ export function useCourseDetail(courseId: string): UseCourseDetailResult {
       setLoading(true)
       setError(null)
       
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081"
+      const baseUrl = process.env.NEXT_PUBLIC_COURSE_API_URL
       const apiUrl = `${baseUrl}/api/courses/public/${courseId}`
       
       console.log(`Fetching course detail from: ${apiUrl}`)

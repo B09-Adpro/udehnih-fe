@@ -30,7 +30,7 @@ export interface CourseHeaderProps {
   totalCourses: number;
   categories: string[];
   isLoading: boolean;
-  searchQuery?: string; // Add this property
+  searchQuery?: string;
 }
 
 export interface CourseFiltersProps {
