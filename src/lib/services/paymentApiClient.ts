@@ -115,7 +115,7 @@ api.interceptors.response.use(
           processPaymentQueue(err, null);
           clearUserData();
           if (typeof window !== 'undefined') {
-            // window.location.href = '/login';
+            window.location.href = '/login';
           }
           return Promise.reject(err);
         } finally {
@@ -124,7 +124,7 @@ api.interceptors.response.use(
       } else {
         clearUserData();
         if (typeof window !== 'undefined') {
-          // window.location.href = '/login';
+          window.location.href = '/login';
         }
       }
     }

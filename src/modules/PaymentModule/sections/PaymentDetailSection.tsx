@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -12,13 +12,13 @@ import { useRouter } from 'next/navigation';
 import { PaymentStatusConstants, RefundReasons } from '../constant';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { UUID } from 'crypto';
 
 interface PaymentDetailSectionProps {
-  transactionId: UUID;
+  transactionId: string;
 }
 
 const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transactionId }) => {
+  
   const router = useRouter();
   const [transaction, setTransaction] = useState<PaymentResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,28 +27,27 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
     reason: '',
     details: ''
   });
+  const [isCancelDialogOpen, setCancelDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchTransactionDetails();
-  }, [transactionId]);
-
-  const fetchTransactionDetails = async () => {
+  const fetchTransactionDetails = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await PaymentService.getPaymentById(transactionId);
       setTransaction(response);
     } catch (error) {
       let errorMessage = 'Gagal memuat detail transaksi';
-      
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [transactionId]);
+
+  useEffect(() => {
+    fetchTransactionDetails();
+  }, [fetchTransactionDetails]);
 
   const handleRefundReasonChange = (value: string) => {
     setRefundRequest({
@@ -95,6 +94,24 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
     }
   };
 
+  const submitCancelPayment = async () => {
+    setIsLoading(true);
+    try {
+      await PaymentService.cancelPayment(transactionId);
+      toast.success('Pembayaran berhasil dibatalkan');
+      setCancelDialogOpen(false);
+      await fetchTransactionDetails();
+    } catch (error) {
+      let errorMessage = 'Gagal membatalkan pembayaran';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case PaymentStatusConstants.SUCCESS:
@@ -111,6 +128,9 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
         return <Badge className="bg-gray-500">{status}</Badge>;
     }
   };
+
+  // Fungsi untuk menentukan apakah transaksi bisa dibatalkan (pending approval admin)
+  const isPendingApproval = transaction && transaction.paymentStatus === PaymentStatusConstants.PENDING && !(transaction.paymentDetails?.adminApproval);
 
   if (isLoading) {
     return (
@@ -189,7 +209,29 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
                 <Download className="w-4 h-4 mr-2" />
                 Unduh Bukti Pembayaran
               </Button>
-              
+              {isPendingApproval && (
+                <Dialog open={isCancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive">Batalkan Pembayaran</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                      <DialogTitle>Batalkan Pembayaran</DialogTitle>
+                      <DialogDescription>
+                        Apakah Anda yakin ingin membatalkan transaksi ini? Tindakan ini tidak dapat dibatalkan.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setCancelDialogOpen(false)} disabled={isLoading}>
+                        Batal
+                      </Button>
+                      <Button variant="destructive" onClick={submitCancelPayment} disabled={isLoading}>
+                        {isLoading ? 'Memproses...' : 'Ya, Batalkan'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
               {transaction.paymentStatus === PaymentStatusConstants.SUCCESS && (
                 <Dialog open={isRefundDialogOpen} onOpenChange={setRefundDialogOpen}>
                   <DialogTrigger asChild>
@@ -199,16 +241,16 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
                     <DialogHeader>
                       <DialogTitle>Ajukan Pengembalian Dana</DialogTitle>
                       <DialogDescription>
-                        Mohon berikan alasan Anda mengajukan pengembalian dana untuk kursus ini.
+                        Mohon berikan alasan dan detail permintaan refund Anda. Permintaan akan diproses oleh admin.
                       </DialogDescription>
                     </DialogHeader>
-                    
                     <div className="grid gap-4 py-4">
                       <div className="space-y-2">
                         <Label htmlFor="refundReason">Alasan Refund</Label>
                         <Select 
                           value={refundRequest.reason} 
                           onValueChange={handleRefundReasonChange}
+                          disabled={isLoading}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Pilih alasan refund" />
@@ -231,12 +273,12 @@ const PaymentDetailSection: React.FC<PaymentDetailSectionProps> = ({ transaction
                           placeholder="Berikan detail alasan permintaan refund Anda"
                           value={refundRequest.details}
                           onChange={handleRefundDetailsChange}
+                          disabled={isLoading}
                         />
                       </div>
                     </div>
-                    
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setRefundDialogOpen(false)}>
+                      <Button variant="outline" onClick={() => setRefundDialogOpen(false)} disabled={isLoading}>
                         Batal
                       </Button>
                       <Button onClick={submitRefundRequest} disabled={isLoading}>

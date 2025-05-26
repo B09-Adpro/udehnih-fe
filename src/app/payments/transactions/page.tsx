@@ -3,12 +3,11 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-// Redirects to history page from /payment/transactions
 export default function PaymentTransactionsRedirectPage() {
   const router = useRouter()
   
   useEffect(() => {
-    router.replace('/payment/history')
+    router.replace('/payments/history')
   }, [router])
 
   return (

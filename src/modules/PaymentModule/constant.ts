@@ -4,19 +4,17 @@ export const PaymentMethodConstants = {
 };
 
 export const PaymentStatusConstants = {
-  PENDING: 'pending',
+  PENDING: 'PENDING',
   PROCESSING: 'processing',
-  SUCCESS: 'success',
-  FAILED: 'failed',
-  REFUNDED: 'refunded',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED',
 };
 
 export const BankOptions = [
-  { value: 'bca', label: 'Bank Central Asia (BCA)' },
-  { value: 'mandiri', label: 'Bank Mandiri' },
-  { value: 'bni', label: 'Bank Negara Indonesia (BNI)' },
-  { value: 'bri', label: 'Bank Rakyat Indonesia (BRI)' },
-  { value: 'cimb', label: 'CIMB Niaga' },
+  { value: 'bca', label: 'Bank Central Asia (BCA)', accountNumber: '123-456-7890', accountName: 'Udehnih' },
+  { value: 'mandiri', label: 'Bank Mandiri', accountNumber: '456-789-0123', accountName: 'Udehnih' },
+  { value: 'bni', label: 'Bank Negara Indonesia (BNI)', accountNumber: '987-654-3210', accountName: 'Udehnih' },
 ];
 
 export const RefundReasons = [
@@ -26,3 +24,24 @@ export const RefundReasons = [
   { value: 'not_satisfied', label: 'Tidak puas dengan kursus' },
   { value: 'other', label: 'Lainnya' },
 ];
+
+export enum PaymentStatusEnum {
+  WAITING_PAYMENT = 'WAITING_PAYMENT',
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  FAILED = 'FAILED',
+}
+
+export enum RefundStatusEnum {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+export enum BankEnum {
+  BCA = 'BCA',
+  BNI = 'BNI',
+  MANDIRI = 'MANDIRI',
+  BRI = 'BRI',
+  CIMB = 'CIMB',
+}

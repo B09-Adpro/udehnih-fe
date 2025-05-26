@@ -40,7 +40,7 @@ export default function PaymentDetailPage() {
 
   // Handler untuk ketika pembayaran selesai
   const handlePaymentComplete = () => {
-    router.push('/payment/history');
+    router.push('/payments/history');
   };
 
   // Handler untuk kembali ke halaman sebelumnya

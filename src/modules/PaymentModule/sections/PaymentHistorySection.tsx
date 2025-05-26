@@ -134,7 +134,7 @@ const PaymentHistorySection: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       className="flex items-center"
-                      onClick={() => router.push(`/payment/${transaction.transactionId}`)}
+                      onClick={() => router.push(`/payments/${transaction.transactionId}/detail`)}
                     >
                       Detail Transaksi
                       <ArrowRight className="w-4 h-4 ml-2" />

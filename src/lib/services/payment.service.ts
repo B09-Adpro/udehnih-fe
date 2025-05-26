@@ -1,5 +1,5 @@
-import { UUID } from 'crypto';
 import paymentApi from './paymentApiClient';
+import { PaymentStatusEnum, RefundStatusEnum } from '@/modules/PaymentModule/constant';
 
 export interface PaymentRequest {
   studentId: number;
@@ -23,13 +23,13 @@ export interface RefundRequest {
 }
 
 export interface PaymentResponse {
-  transactionId: UUID;
+  transactionId: string; // Ubah UUID menjadi string
   courseId: number;
   userId: number;
   courseTitle: string;
   tutorName: string;
   amount: number;
-  paymentStatus: string;
+  paymentStatus: PaymentStatusEnum;
   paymentMethod: string;
   paymentDetails: PaymentDetails
   createdAt: string;
@@ -37,13 +37,13 @@ export interface PaymentResponse {
 }
 
 export interface PaymentDetailDTO {
-  transactionId: UUID;
+  transactionId: string; // Ubah UUID menjadi string
   courseId: number;
   userId: number;
   courseTitle: string;
   tutorName: string;
   amount: number;
-  paymentStatus: string;
+  paymentStatus: PaymentStatusEnum;
   paymentMethod: string;
   bankName?: string;
   paymentDetails: PaymentDetails;
@@ -60,10 +60,10 @@ export interface PaymentDetails {
 }
 
 export interface RefundResponse {
-  refundId: UUID;
-  transactionId: UUID;
+  refundId: string; // Ubah UUID menjadi string
+  transactionId: string; // Ubah UUID menjadi string
   reason: string;
-  status: string;
+  status: RefundStatusEnum;
   requestedAt: string;
   processedAt: string | null;
   approvedBy: string | null;
@@ -83,7 +83,7 @@ export const PaymentService = {
 
   createPayment: async (request: PaymentRequest): Promise<PaymentResponse> => {
     try {
-      const courseApiKey = process.env.NEXT_PUBLIC_COURSE_API_KEY || '';
+      const courseApiKey = process.env.NEXT_PUBLIC_API_URL_COURSE || '';
       console.log('Using API key:', courseApiKey ? 'Key exists (not showing for security)' : 'No key found');
       
       const response = await paymentApi.post('api/payments', request, {
@@ -103,33 +103,32 @@ export const PaymentService = {
     }
   },
 
-  getTransactionDetails: async (transactionId: UUID, options?: { 
-    apiKey?: string}): Promise<PaymentDetailDTO> => {
+  getTransactionDetails: async (transactionId: string, options?: { apiKey?: string }): Promise<PaymentDetailDTO> => {
+    if (!transactionId) {
+      throw new Error('Transaction ID is required and must be valid.');
+    }
+
     try {
       const headers: Record<string, string> = {};
-      
+
       if (options?.apiKey) {
         headers['X-API-Key'] = options.apiKey;
       }
-      
+
       const authToken = localStorage.getItem('auth_token');
       if (!options?.apiKey && authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
       }
-      
-      const response = await paymentApi.get(`api/payments/${transactionId}`, {
-        headers
-      });
-      
+
+      const response = await paymentApi.get(`api/payments/${transactionId}`, { headers });
       return response.data;
     } catch (error: unknown) {
-      const axiosError = error as {response?: {data?: {message?: string; status?: string}, status?: number}};
-
+      const axiosError = error as { response?: { data?: { message?: string; status?: string }, status?: number } };
       throw new Error(axiosError.response?.data?.message || 'Failed to fetch transaction details');
     }
   },
 
-  getPaymentById: async (transactionId: UUID): Promise<any> => {
+  getPaymentById: async (transactionId: string): Promise<any> => {
     try {
       const response = await paymentApi.get(`api/payments/${transactionId}`);
       return response.data;
@@ -139,7 +138,7 @@ export const PaymentService = {
     }
   },
 
-  processCardPayment: async (transactionId: UUID, cardDetails: CreditCardRequest): Promise<PaymentResponse> => {
+  processCardPayment: async (transactionId: string, cardDetails: CreditCardRequest): Promise<PaymentResponse> => {
     try {
       const response = await paymentApi.post(`api/payments/${transactionId}/credit-card`, cardDetails);
       return response.data;
@@ -149,7 +148,7 @@ export const PaymentService = {
     }
   },
 
-  processBankTransfer: async (transactionId: UUID): Promise<PaymentResponse> => {
+  processBankTransfer: async (transactionId: string): Promise<PaymentResponse> => {
     try {
       const response = await paymentApi.post(`api/payments/${transactionId}/bank-transfer`);
       return response.data;
@@ -159,7 +158,7 @@ export const PaymentService = {
     }
   },
 
-  confirmBankTransfer: async (transactionId: UUID): Promise<PaymentResponse> => {
+  confirmBankTransfer: async (transactionId: string): Promise<PaymentResponse> => {
     try {
       const response = await paymentApi.post(`api/payments/${transactionId}/confirm-transfer`);
       return response.data;
@@ -169,7 +168,7 @@ export const PaymentService = {
     }
   },
 
-  requestRefund: async (transactionId: UUID, refundRequest: RefundRequest): Promise<RefundResponse> => {
+  requestRefund: async (transactionId: string, refundRequest: RefundRequest): Promise<RefundResponse> => {
     try {
       const response = await paymentApi.post(`api/payments/${transactionId}/refund`, refundRequest);
       return response.data;
@@ -227,7 +226,7 @@ export const PaymentService = {
     }
   },
 
-  getRefundDetails: async (refundId: UUID, apiKey: string): Promise<RefundResponse> => {
+  getRefundDetails: async (refundId: string, apiKey: string): Promise<RefundResponse> => {
     try {
       const response = await paymentApi.get(`api/payments/refunds/${refundId}`, {
         headers: {
@@ -238,6 +237,22 @@ export const PaymentService = {
     } catch (error: unknown) {
       const axiosError = error as {response?: {data?: {message?: string}}};
       throw new Error(axiosError.response?.data?.message || 'Failed to fetch refund details');
+    }
+  },
+
+  cancelPayment: async (transactionId: string): Promise<PaymentResponse> => {
+    const dashboardApiKey = process.env.NEXT_PUBLIC_DASHBOARD_API_KEY || '';
+    const body = { status: "CANCELLED" };
+    try {
+      const response = await paymentApi.put(
+        `api/payments/${transactionId}/status`,
+        body,
+        { headers: { 'X-API-Key': dashboardApiKey } }
+      );
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as {response?: {data?: {message?: string}}};
+      throw new Error(axiosError.response?.data?.message || 'Failed to cancel payment');
     }
   }
 };

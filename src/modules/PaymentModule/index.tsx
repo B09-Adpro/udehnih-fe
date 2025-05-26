@@ -20,32 +20,43 @@ export interface PaymentModuleProps {
 }
 
 const PaymentModule: React.FC<PaymentModuleProps> = ({
-  courseId = 0,
-  courseTitle = '',
-  tutorName = '',
-  amount = 0,
-  studentId = 0
+  courseId,
+  courseTitle,
+  tutorName,
+  amount,
+  studentId
 }) => {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState(PaymentMethodConstants.CREDIT_CARD);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [transactionId, setTransactionId] = useState<number | null>(null);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
   const [stage, setStage] = useState<'method_selection' | 'payment_details'>('method_selection');
 
-  // Use demo data if props are not provided
+  // Gabungkan data course dari props
   const courseData = {
-    courseId: courseId || 1,
-    courseTitle: courseTitle || "Advanced React Development",
-    tutorName: tutorName || "John Doe",
-    amount: amount || 299.99,
-    studentId: studentId || 2001
+    courseId,
+    courseTitle,
+    tutorName,
+    amount,
+    studentId,
   };
 
   const handleInitiatePayment = async () => {
     setIsProcessing(true);
-    
+
     try {
-      // Create payment request
+      if (
+        !courseData.studentId ||
+        !courseData.courseId ||
+        !courseData.courseTitle ||
+        !courseData.tutorName ||
+        !courseData.amount
+      ) {
+        toast.error('Data kursus tidak lengkap untuk pembayaran.');
+        setIsProcessing(false);
+        return;
+      }
+
       const paymentRequest: PaymentRequest = {
         studentId: courseData.studentId,
         courseId: courseData.courseId,
@@ -54,19 +65,18 @@ const PaymentModule: React.FC<PaymentModuleProps> = ({
         amount: courseData.amount,
         paymentMethod: paymentMethod
       };
-      
-      // Call payment service to create a new payment
+
       const response = await PaymentService.createPayment(paymentRequest);
       setTransactionId(response.transactionId);
       setStage('payment_details');
       toast.info('Silakan selesaikan proses pembayaran');
     } catch (error) {
       let errorMessage = 'Gagal membuat transaksi pembayaran';
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
@@ -75,8 +85,7 @@ const PaymentModule: React.FC<PaymentModuleProps> = ({
 
   const handlePaymentComplete = (response: any) => {
     toast.success('Pembayaran berhasil diproses!');
-    // Redirect to payment detail page
-    router.push(`/payment/${response.transactionId || transactionId}`);
+    router.push(`/payments/${response.transactionId || transactionId}`);
   };
 
   const handleGoBack = () => {
@@ -96,8 +105,8 @@ const PaymentModule: React.FC<PaymentModuleProps> = ({
         </Button>
         <h1 className="text-3xl font-bold">Pembayaran Kursus</h1>
         <p className="text-muted-foreground">
-          {stage === 'method_selection' 
-            ? 'Pilih metode pembayaran yang Anda inginkan' 
+          {stage === 'method_selection'
+            ? 'Pilih metode pembayaran yang Anda inginkan'
             : 'Selesaikan proses pembayaran Anda'
           }
         </p>
@@ -112,16 +121,16 @@ const PaymentModule: React.FC<PaymentModuleProps> = ({
           <CardContent className="space-y-4">
             <div className="flex justify-between">
               <span className="font-medium">Kursus:</span>
-              <span>{courseData.courseTitle}</span>
+              <span>{courseData.courseTitle || '-'}</span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Instruktur:</span>
-              <span>{courseData.tutorName}</span>
+              <span>{courseData.tutorName || '-'}</span>
             </div>
             <div className="border-t pt-4">
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>
-                <span>Rp {courseData.amount.toLocaleString('id-ID')}</span>
+                <span>Rp {courseData.amount?.toLocaleString('id-ID') || '0'}</span>
               </div>
             </div>
           </CardContent>
@@ -134,12 +143,12 @@ const PaymentModule: React.FC<PaymentModuleProps> = ({
               {stage === 'method_selection' ? 'Metode Pembayaran' : 'Detail Pembayaran'}
             </CardTitle>
             <CardDescription>
-              {stage === 'method_selection' 
-                ? 'Pilih cara pembayaran yang Anda inginkan' 
-                : `Pembayaran dengan ${paymentMethod === PaymentMethodConstants.CREDIT_CARD 
-                    ? 'kartu kredit/debit' 
-                    : 'transfer bank'
-                  }`
+              {stage === 'method_selection'
+                ? 'Pilih cara pembayaran yang Anda inginkan'
+                : `Pembayaran dengan ${paymentMethod === PaymentMethodConstants.CREDIT_CARD
+                  ? 'kartu kredit/debit'
+                  : 'transfer bank'
+                }`
               }
             </CardDescription>
           </CardHeader>
@@ -162,10 +171,10 @@ const PaymentModule: React.FC<PaymentModuleProps> = ({
                     </Label>
                   </div>
                 </RadioGroup>
-                
-                <Button 
-                  onClick={handleInitiatePayment} 
-                  className="w-full" 
+
+                <Button
+                  onClick={handleInitiatePayment}
+                  className="w-full"
                   disabled={isProcessing}
                 >
                   {isProcessing ? "Memproses..." : "Lanjutkan Pembayaran"}
@@ -174,18 +183,18 @@ const PaymentModule: React.FC<PaymentModuleProps> = ({
             ) : (
               <>
                 {paymentMethod === PaymentMethodConstants.CREDIT_CARD && transactionId && (
-                  <PaymentCreditCardSection 
-                    transactionId={transactionId}
+                  <PaymentCreditCardSection
+                    transactionId={transactionId as `${string}-${string}-${string}-${string}-${string}`}
                     onPaymentComplete={handlePaymentComplete}
                     onBack={handleGoBack}
                     isLoading={isProcessing}
                     setIsLoading={setIsProcessing}
                   />
                 )}
-                
+
                 {paymentMethod === PaymentMethodConstants.BANK_TRANSFER && transactionId && (
-                  <PaymentBankTransferSection 
-                    transactionId={transactionId}
+                  <PaymentBankTransferSection
+                    transactionId={transactionId as `${string}-${string}-${string}-${string}-${string}`}
                     onPaymentComplete={handlePaymentComplete}
                     onBack={handleGoBack}
                     isLoading={isProcessing}
