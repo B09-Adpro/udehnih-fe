@@ -30,6 +30,7 @@ export interface CourseHeaderProps {
   totalCourses: number;
   categories: string[];
   isLoading: boolean;
+  searchQuery?: string; // Add this property
 }
 
 export interface CourseFiltersProps {
@@ -50,6 +51,7 @@ export interface CourseGridProps {
   onRetry: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  keywordFromURL: string;
 }
 
 export interface CourseFooterProps {
