@@ -107,7 +107,7 @@ export function CourseLearnModule({ courseId }: CourseLearnModuleProps) {
   }
   
   const handleBackToCourse = () => {
-    router.push(`/course/${courseId}`)
+    router.push(`/my-courses`)
   }
   
   // Loading state
