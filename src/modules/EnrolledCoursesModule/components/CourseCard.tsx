@@ -6,7 +6,7 @@ export function CourseCard({ id, title, instructor }: CourseCardProps) {
   const router = useRouter()
   
   const handleClick = () => {
-    router.push(`/course/${id}/content`)
+    router.push(`/course/${id}/learn`)
   }
   
   return (
