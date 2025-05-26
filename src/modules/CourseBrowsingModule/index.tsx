@@ -1,45 +1,41 @@
 "use client"
 
-import { useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import { useCourses } from "./hooks/useCourses"
-import { CourseHeader } from "./sections/CoursesHeader"
-import { CourseGrid } from "./sections/CourseGrid"
-import { CourseFooter } from "./sections/CourseFooter"
 import { CoursesByCategory } from "./interface"
+import { CourseFooter } from "./sections/CourseFooter"
+import { CourseGrid } from "./sections/CourseGrid"
+import { CourseHeader } from "./sections/CoursesHeader"
 
 export function CourseBrowsingModule() {
-  const { data, loading, error, refetch } = useCourses()
-  const [searchQuery, setSearchQuery] = useState("")
+  const searchParams = useSearchParams();
+  const keywordFromURL = searchParams.get("keyword") || "";
+  
+  const [searchQuery, setSearchQuery] = useState(keywordFromURL)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [sortOrder, setSortOrder] = useState<string>("default")
+  
+  const { data, loading, error, refetch } = useCourses(keywordFromURL)
+
+  useEffect(() => {
+    setSearchQuery(keywordFromURL);
+    if (keywordFromURL) {
+      console.log("Searching from URL parameter:", keywordFromURL);
+    }
+  }, [keywordFromURL]);
 
   const totalCourses = data 
     ? Object.values(data).reduce((total, courses) => total + courses.length, 0) 
     : 0
   const categories = data ? Object.keys(data) : []
 
-  // Get filtered and sorted courses
   const getFilteredAndSortedCourses = (): CoursesByCategory | null => {
     if (!data) return null
 
     const filteredCategories = selectedCategory 
       ? { [selectedCategory]: data[selectedCategory] } 
       : data
-
-    // Filter based on search query
-    if (searchQuery) {
-      const result: CoursesByCategory = {}
-      Object.entries(filteredCategories).forEach(([category, courses]) => {
-        const filtered = courses.filter(course => 
-          course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          course.instructor.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        if (filtered.length > 0) {
-          result[category] = filtered
-        }
-      })
-      return result
-    }
 
     // Sort courses in each category
     const sortedResult: CoursesByCategory = {}
@@ -73,6 +69,7 @@ export function CourseBrowsingModule() {
         totalCourses={totalCourses}
         categories={categories}
         isLoading={loading}
+        searchQuery={searchQuery}
       />
       
       <CourseGrid 
@@ -82,7 +79,9 @@ export function CourseBrowsingModule() {
         onRetry={refetch}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        keywordFromURL={keywordFromURL}
       />
+      <CourseFooter categories={categories} />
     </div>
   )
 }
