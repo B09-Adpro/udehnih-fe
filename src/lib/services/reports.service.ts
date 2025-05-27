@@ -3,7 +3,7 @@ import { ReportRequestDto, ReportResponseDto, AuthUser } from './interface';
 import { AuthService } from './auth.service';
 
 
-const API_URL = process.env.NEXT_PUBLIC_REPORT_API_URL|| 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_REPORT_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
