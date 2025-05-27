@@ -31,15 +31,15 @@ export const ReportService = {
   },
 
   isStudent: (): boolean => {
-    return ReportService.hasRole('ROLE_STUDENT');
+    return ReportService.hasRole('STUDENT');
   },
 
   isTutor: (): boolean => {
-    return ReportService.hasRole('ROLE_TUTOR');
+    return ReportService.hasRole('TUTOR');
   },
 
   isStaff: (): boolean => {
-    return ReportService.hasRole('ROLE_STAFF');
+    return ReportService.hasRole('STAFF');
   },
   create: async (request: ReportRequestDto): Promise<ReportResponseDto> => {
     try {
