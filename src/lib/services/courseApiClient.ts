@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL_COURSE = process.env.NEXT_PUBLIC_API_URL_COURSE || 'http://localhost:8081';
+const API_URL_COURSE = process.env.NEXT_PUBLIC_COURSE_API_URL || 'http://localhost:8081';
 const USER_STORAGE_KEY = 'user';
 
 interface StoredUser {
