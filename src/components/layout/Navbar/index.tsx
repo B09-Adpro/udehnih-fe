@@ -1,14 +1,17 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Search, Menu, ChevronDown, GraduationCap, LogOut, BookOpen, Users } from 'lucide-react';
 import Link from 'next/link';
 import useUserData from '@/lib/hooks/useUserData';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export const Navbar = () => {
   const { userData, isAuthenticated, logout, isLoading, isTutor, isStaff } = useUserData();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Debug logs untuk Navbar
   console.log("=== NAVBAR DEBUG ===");
@@ -27,6 +30,14 @@ export const Navbar = () => {
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error('Gagal keluar');
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/course?keyword=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
     }
   };
 
@@ -131,12 +142,19 @@ export const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center relative">
-            <Search className="absolute left-3 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Cari kursus..."
-              className="pl-9 pr-4 py-2 text-sm bg-gray-100 rounded-full w-48 focus:w-64 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+              <Search 
+                className="absolute left-3 h-4 w-4 text-gray-400" 
+                onClick={handleSearch}
+              />
+            <form onSubmit={handleSearch}>
+              <input
+                type="text"
+                placeholder="Cari kursus..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-4 py-2 text-sm bg-gray-100 rounded-full w-48 focus:w-64 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </form>
           </div>
 
           <div className="hidden md:flex items-center space-x-3">
