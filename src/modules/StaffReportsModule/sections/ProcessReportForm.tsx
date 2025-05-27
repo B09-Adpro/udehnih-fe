@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { StaffReportService } from '@/lib/services/staff.reports.service';
 import { AuthService } from '@/lib/services/auth.service';
 import { toast } from 'sonner';
@@ -52,7 +52,8 @@ export const ProcessReportForm = ({ report }: ProcessReportFormProps) => {
     handleSubmit, 
     formState: { errors },
     watch,
-    reset
+    reset,
+    control
   } = useForm<RejectionFormValues>({
     resolver: zodResolver(rejectionMessageSchema),
     defaultValues: {
@@ -203,17 +204,27 @@ export const ProcessReportForm = ({ report }: ProcessReportFormProps) => {
               {!isResolve && (
                 <div className="space-y-2">
                   <Label htmlFor="rejectionMessage" className="text-sm font-medium">Alasan Penolakan</Label>
-                  <Select
-                    id="rejectionMessage"
-                    className={`w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors.rejectionMessage ? 'border-red-500 focus:ring-red-500' : ''}`}
-                    {...register('rejectionMessage')}
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Pilih alasan penolakan</option>
-                    {Object.values(RejectionMessage).map((value) => (
-                      <option key={value} value={value}>{REJECTION_MESSAGE_DISPLAY[value]}</option>
-                    ))}
-                  </Select>
+                  <Controller
+                    name="rejectionMessage"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger 
+                          id="rejectionMessage"
+                          className={`w-full ${errors.rejectionMessage ? 'border-red-500 focus:ring-red-500' : ''}`}
+                        >
+                          <SelectValue placeholder="Pilih alasan penolakan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(RejectionMessage).map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {REJECTION_MESSAGE_DISPLAY[value]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {errors.rejectionMessage && (
                     <p className="text-xs text-red-500 mt-1">
                       {errors.rejectionMessage.message}
