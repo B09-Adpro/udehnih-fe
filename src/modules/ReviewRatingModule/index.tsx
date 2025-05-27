@@ -1,9 +1,15 @@
-import React from 'react'
+"use client"
 
-export const ReviewRatingModule = () => {
+import React from 'react'
+import { ReviewSection } from './sections/ReviewSection'
+import { ReviewRatingModuleProps } from './interface'
+
+export function ReviewRatingModule({ courseId }: ReviewRatingModuleProps) {
   return (
-    <div>
-      
+    <div className="w-full">
+      <ReviewSection courseId={courseId} />
     </div>
   )
 }
+
+export default ReviewRatingModule

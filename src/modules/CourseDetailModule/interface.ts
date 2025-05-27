@@ -17,24 +17,3 @@ export interface UseCourseDetailResult {
   error: string | null;
   refetch: () => Promise<void>;
 }
-
-export interface HeaderProps {
-  title: string;
-  category: string;
-  instructor: string;
-  onBack: () => void;
-}
-
-export interface DescriptionProps {
-  description: string;
-}
-
-export interface EnrollmentProps {
-  courseId: string;
-  price: number;
-  title: string;
-  isFree: boolean;
-  enrolling: boolean;
-  onEnroll: () => void;
-  onViewContent: () => void;
-}

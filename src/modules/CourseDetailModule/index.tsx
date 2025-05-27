@@ -9,6 +9,7 @@ import { Header } from "./sections/Header"
 import { Description } from "./sections/Description"
 import { Enrollment } from "./sections/Enrollment"
 import { CourseDetailSkeleton } from "./components/CourseDetailSkeleton"
+import ReviewRatingModule from "../ReviewRatingModule"
 
 interface CourseDetailModuleProps {
   courseId: string
@@ -111,57 +112,68 @@ export function CourseDetailModule({ courseId }: CourseDetailModuleProps) {
       />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            <Description 
-              description={course.description || "Tidak ada deskripsi tersedia untuk kursus ini."}
-            />
-            
-            <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Informasi Kursus</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center">
-                  <Clock className="h-5 w-5 text-gray-500 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-500">Terakhir Diperbarui</p>
-                    <p className="font-medium">{new Date(course.updated_at).toLocaleDateString('id-ID')}</p>
+        <div className="max-w-7xl mx-auto">
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="md:col-span-2">
+              <Description 
+                description={course.description || "Tidak ada deskripsi tersedia untuk kursus ini."}
+              />
+              
+              <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Informasi Kursus</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center">
+                    <Clock className="h-5 w-5 text-gray-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Terakhir Diperbarui</p>
+                      <p className="font-medium">{new Date(course.updated_at).toLocaleDateString('id-ID')}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center">
-                  <User className="h-5 w-5 text-gray-500 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-500">Instruktur</p>
-                    <p className="font-medium">{course.instructor}</p>
+                  <div className="flex items-center">
+                    <User className="h-5 w-5 text-gray-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Instruktur</p>
+                      <p className="font-medium">{course.instructor}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-5 w-5 text-gray-500 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-500">Dibuat Pada</p>
-                    <p className="font-medium">{new Date(course.created_at).toLocaleDateString('id-ID')}</p>
+                  <div className="flex items-center">
+                    <Calendar className="h-5 w-5 text-gray-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Dibuat Pada</p>
+                      <p className="font-medium">{new Date(course.created_at).toLocaleDateString('id-ID')}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center">
-                  <BookOpen className="h-5 w-5 text-gray-500 mr-3" />
-                  <div>
-                    <p className="text-sm text-gray-500">Kategori</p>
-                    <p className="font-medium">{course.category}</p>
+                  <div className="flex items-center">
+                    <BookOpen className="h-5 w-5 text-gray-500 mr-3" />
+                    <div>
+                      <p className="text-sm text-gray-500">Kategori</p>
+                      <p className="font-medium">{course.category}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            
+            <div className="md:col-span-1">
+              <Enrollment 
+                courseId={course.id.toString()}
+                price={course.price}
+                title={course.title}
+                isFree={course._free}
+                onEnroll={handleEnroll}
+                onViewContent={handleViewContent}
+                enrolling={enrolling}
+              />
+            </div>
           </div>
-          
-          <div className="md:col-span-1">
-            <Enrollment 
-              courseId={course.id.toString()}
-              price={course.price}
-              title={course.title}
-              isFree={course._free}
-              onEnroll={handleEnroll}
-              onViewContent={handleViewContent}
-              enrolling={enrolling}
-            />
+
+          {/* Reviews Section */}
+          <div className="max-w-4xl mx-auto">
+            <div className="border-t pt-8">
+              <h2 className="text-2xl font-bold mb-6">Ulasan & Rating</h2>
+              <ReviewRatingModule courseId={courseId} />
+            </div>
           </div>
         </div>
       </div>
